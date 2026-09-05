@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type { Vehiculo } from "@prisma/client";
 import CarCard from "@/components/CarCard";
 
@@ -10,102 +10,168 @@ interface CatalogGridProps {
   cars: Vehiculo[];
 }
 
-const FILTERS = ["Todos", "Deportivo", "Semideportivo", "Porsche", "Audi", "Mercedes-Benz", "Ferrari"];
+const BRANDS = ["Mercedes-Benz", "Porsche", "Audi", "Ferrari"];
+const TYPES = ["Deportivo", "Semideportivo"];
 
 export default function CatalogGrid({ cars }: CatalogGridProps) {
-  const [activeFilter, setActiveFilter] = useState("Todos");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  
+  // Accordion state
+  const [isBrandOpen, setIsBrandOpen] = useState(true);
+  const [isTypeOpen, setIsTypeOpen] = useState(true);
+
+  const toggleBrand = (brand: string) => {
+    setSelectedBrands(prev => 
+      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
+    );
+  };
+
+  const toggleType = (type: string) => {
+    setSelectedTypes(prev => 
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
+  };
 
   const filteredCars = useMemo(() => {
     return cars.filter((car) => {
-      // 1. Filtrar por categoría (Píldoras)
-      const matchesFilter =
-        activeFilter === "Todos" ||
-        car.tipo.toLowerCase() === activeFilter.toLowerCase() ||
-        car.marca.toLowerCase() === activeFilter.toLowerCase();
-
-      // 2. Filtrar por búsqueda de texto
-      const searchLower = searchQuery.toLowerCase();
-      const matchesSearch =
-        car.marca.toLowerCase().includes(searchLower) ||
-        car.modelo.toLowerCase().includes(searchLower) ||
-        car.detalles.toLowerCase().includes(searchLower);
-
-      return matchesFilter && matchesSearch;
+      const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(car.marca);
+      
+      // Need to capitalize car.tipo because the seed uses lower case 'deportivo' but array has 'Deportivo'
+      const capitalizedCarType = car.tipo.charAt(0).toUpperCase() + car.tipo.slice(1);
+      const matchType = selectedTypes.length === 0 || selectedTypes.includes(capitalizedCarType);
+      
+      return matchBrand && matchType;
     });
-  }, [cars, activeFilter, searchQuery]);
+  }, [cars, selectedBrands, selectedTypes]);
 
   return (
-    <div className="w-full">
-      {/* Controles de Búsqueda y Filtros */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
-        
-        {/* Píldoras de Categoría */}
-        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-          {FILTERS.map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                activeFilter === filter
-                  ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10"
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
+    <div className="w-full flex flex-col md:flex-row gap-10 items-start">
+      
+      {/* Sidebar de Filtros (Columna Izquierda) */}
+      <aside className="w-full md:w-64 flex-shrink-0 mb-8 md:mb-0">
+        <h3 className="text-xl font-medium text-white mb-6">Filtros</h3>
 
-        {/* Barra de Búsqueda */}
-        <div className="relative w-full md:w-80">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search size={18} className="text-white/40" />
-          </div>
-          <input
-            type="text"
-            placeholder="Buscar modelos..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-4 text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all placeholder:text-white/30"
-          />
-        </div>
-      </div>
-
-      {/* Grid de Autos Animado */}
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <AnimatePresence mode="popLayout">
-          {filteredCars.map((car, index) => (
-            <motion.div
-              key={car.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-            >
-              <CarCard car={car} index={index} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* Empty State */}
-      {filteredCars.length === 0 && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-24 glass rounded-3xl mt-8"
-        >
-          <p className="text-white/50 text-lg">No se encontraron vehículos que coincidan con tu búsqueda.</p>
+        {/* Acordeón: Marca */}
+        <div className="border-t border-white/10 py-4">
           <button 
-            onClick={() => { setActiveFilter("Todos"); setSearchQuery(""); }}
-            className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            onClick={() => setIsBrandOpen(!isBrandOpen)}
+            className="w-full flex items-center justify-between text-white/80 hover:text-white transition-colors mb-2"
           >
-            Limpiar Filtros
+            <span className="font-medium">Marca</span>
+            {isBrandOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
+          
+          <AnimatePresence>
+            {isBrandOpen && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden flex flex-col gap-3 mt-4"
+              >
+                {BRANDS.map(brand => (
+                  <label key={brand} className="flex items-center gap-3 cursor-pointer group">
+                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                      selectedBrands.includes(brand) 
+                        ? 'bg-white border-white' 
+                        : 'border-white/30 group-hover:border-white/60 bg-transparent'
+                    }`}>
+                      {selectedBrands.includes(brand) && (
+                        <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </motion.svg>
+                      )}
+                    </div>
+                    <span className="text-white/70 group-hover:text-white transition-colors text-sm">{brand}</span>
+                  </label>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Acordeón: Carrocerías / Tipo */}
+        <div className="border-t border-white/10 py-4">
+          <button 
+            onClick={() => setIsTypeOpen(!isTypeOpen)}
+            className="w-full flex items-center justify-between text-white/80 hover:text-white transition-colors mb-2"
+          >
+            <span className="font-medium">Carrocerías</span>
+            {isTypeOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+          
+          <AnimatePresence>
+            {isTypeOpen && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden flex flex-col gap-3 mt-4"
+              >
+                {TYPES.map(type => (
+                  <label key={type} className="flex items-center gap-3 cursor-pointer group">
+                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                      selectedTypes.includes(type) 
+                        ? 'bg-white border-white' 
+                        : 'border-white/30 group-hover:border-white/60 bg-transparent'
+                    }`}>
+                      {selectedTypes.includes(type) && (
+                        <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </motion.svg>
+                      )}
+                    </div>
+                    <span className="text-white/70 group-hover:text-white transition-colors text-sm">{type}</span>
+                  </label>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+      </aside>
+
+      {/* Grid de Autos Animado (Columna Derecha) */}
+      <div className="flex-1">
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-white/50 text-sm font-medium">{filteredCars.length} modelos</p>
+        </div>
+        
+        <motion.div layout className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <AnimatePresence mode="popLayout">
+            {filteredCars.map((car, index) => (
+              <motion.div
+                key={car.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                <CarCard car={car} index={index} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
-      )}
+
+        {/* Empty State */}
+        {filteredCars.length === 0 && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-24 glass rounded-3xl mt-8"
+          >
+            <p className="text-white/50 text-lg">No se encontraron vehículos que coincidan con tu búsqueda.</p>
+            <button 
+              onClick={() => { setSelectedBrands([]); setSelectedTypes([]); }}
+              className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            >
+              Limpiar Filtros
+            </button>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }
