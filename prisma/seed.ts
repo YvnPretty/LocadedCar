@@ -14,7 +14,7 @@ async function main() {
       precio: 5000000, // 5 millones MXN
       tipo: 'deportivo',
       estado: 'disponible',
-      imagenUrl: 'https://images.unsplash.com/photo-1503376712351-1f22f5188f50?q=80&w=2070&auto=format&fit=crop',
+      imagenUrl: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?q=80&w=2000&auto=format&fit=crop',
       detalles: '520 hp, 0-100 km/h en 3.2s. Aerodinámica activa avanzada.'
     },
     {

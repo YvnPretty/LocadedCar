@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Settings2, Gauge } from "lucide-react";
 import type { Vehiculo } from "@prisma/client";
+import Link from "next/link";
 
 export default function CarCard({ car, index }: { car: Vehiculo; index: number }) {
   return (
@@ -63,10 +64,10 @@ export default function CarCard({ car, index }: { car: Vehiculo; index: number }
           </div>
         </div>
 
-        <button className="w-full glass-button py-3 rounded-2xl text-white text-sm font-medium flex items-center justify-center gap-2 group-hover:bg-white/10">
+        <Link href={`/catalogo/${car.id}`} className="w-full glass-button py-3 rounded-2xl text-white text-sm font-medium flex items-center justify-center gap-2 group-hover:bg-white/10 transition-colors">
           Ver Detalles
           <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-        </button>
+        </Link>
       </div>
     </motion.div>
   );

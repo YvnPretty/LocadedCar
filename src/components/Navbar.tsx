@@ -35,9 +35,9 @@ export default function Navbar() {
           <button className="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors">
             <Menu size={20} className="text-white/80" />
           </button>
-          <button className="hidden md:block glass-button px-5 py-2 rounded-full text-sm font-medium">
+          <Link href="/contacto" className="hidden md:block glass-button px-5 py-2 rounded-full text-sm font-medium text-white">
             Agendar Cita
-          </button>
+          </Link>
         </div>
       </div>
     </motion.nav>
