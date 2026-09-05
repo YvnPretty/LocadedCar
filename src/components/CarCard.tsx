@@ -43,7 +43,7 @@ export default function CarCard({ car, index }: { car: Vehiculo; index: number }
       <div className="p-6 bg-gradient-to-b from-[#0a0a0a]/90 to-[#111111]/90 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-4">
           <p className="text-3xl font-light text-white">
-            ${car.precio.toLocaleString()} <span className="text-sm text-white/40">USD</span>
+            {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(car.precio)}
           </p>
         </div>
 

@@ -11,7 +11,7 @@ async function main() {
       marca: 'Porsche',
       modelo: '911 GT3 RS',
       anio: 2023,
-      precio: 250000,
+      precio: 5000000, // 5 millones MXN
       tipo: 'deportivo',
       estado: 'disponible',
       imagenUrl: 'https://images.unsplash.com/photo-1503376712351-1f22f5188f50?q=80&w=2070&auto=format&fit=crop',
@@ -21,7 +21,7 @@ async function main() {
       marca: 'Audi',
       modelo: 'R8 V10 Performance',
       anio: 2022,
-      precio: 180000,
+      precio: 3600000, // 3.6 millones MXN
       tipo: 'deportivo',
       estado: 'disponible',
       imagenUrl: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2069&auto=format&fit=crop',
@@ -31,7 +31,7 @@ async function main() {
       marca: 'Mercedes-Benz',
       modelo: 'AMG GT 63',
       anio: 2023,
-      precio: 165000,
+      precio: 3300000, // 3.3 millones MXN
       tipo: 'semideportivo',
       estado: 'disponible',
       imagenUrl: 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068?q=80&w=2115&auto=format&fit=crop',
@@ -41,7 +41,7 @@ async function main() {
       marca: 'Ferrari',
       modelo: 'F8 Tributo',
       anio: 2021,
-      precio: 320000,
+      precio: 6400000, // 6.4 millones MXN
       tipo: 'deportivo',
       estado: 'vendido',
       imagenUrl: 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?q=80&w=2070&auto=format&fit=crop',
