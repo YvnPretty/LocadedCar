@@ -1,5 +1,5 @@
 import Hero from "@/components/Hero";
-import CarCard from "@/components/CarCard";
+import CatalogGrid from "@/components/CatalogGrid";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -27,17 +27,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {cars.map((car, index) => (
-            <CarCard key={car.id} car={car} index={index} />
-          ))}
-        </div>
-        
-        {cars.length === 0 && (
-          <div className="text-center py-24 glass rounded-3xl">
-            <p className="text-white/50">No hay vehículos disponibles en el catálogo en este momento.</p>
-          </div>
-        )}
+        <CatalogGrid cars={cars} />
       </section>
     </main>
   );
