@@ -29,11 +29,11 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Columna Izquierda: Imagen */}
-          <div className="glass rounded-3xl overflow-hidden h-[500px] relative">
+          <div className="relative aspect-video rounded-3xl overflow-hidden glass">
             <img 
               src={car.imagenUrl || ""} 
               alt={`${car.marca} ${car.modelo}`} 
-              className="w-full h-full object-contain bg-black/50"
+              className="w-full h-full object-cover"
             />
             <div className="absolute top-4 right-4">
               <span className={`px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md ${
