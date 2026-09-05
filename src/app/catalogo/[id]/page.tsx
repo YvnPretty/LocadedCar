@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Gauge, Settings2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import CarMediaViewer from "@/components/CarMediaViewer";
 
 const prisma = new PrismaClient();
 
@@ -28,21 +29,13 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Columna Izquierda: Imagen */}
-          <div className="relative aspect-video rounded-3xl overflow-hidden glass">
-            <img 
-              src={car.imagenUrl || ""} 
-              alt={`${car.marca} ${car.modelo}`} 
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute top-4 right-4">
-              <span className={`px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md ${
-                car.estado === 'disponible' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-              }`}>
-                {car.estado.toUpperCase()}
-              </span>
-            </div>
-          </div>
+          {/* Columna Izquierda: Imagen / Visor 3D */}
+          <CarMediaViewer 
+            imageUrl={car.imagenUrl || ""}
+            brand={car.marca}
+            model={car.modelo}
+            status={car.estado}
+          />
 
           {/* Columna Derecha: Detalles */}
           <div className="flex flex-col justify-center">
