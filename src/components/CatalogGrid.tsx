@@ -10,7 +10,7 @@ interface CatalogGridProps {
   cars: Vehiculo[];
 }
 
-const BRANDS = ["Mercedes-Benz", "Porsche", "Audi", "Ferrari"];
+const BRANDS = ["Mercedes-Benz", "Porsche", "Audi", "Ferrari", "Lamborghini", "Bugatti", "Pagani", "Ford", "Chevrolet"];
 const TYPES = ["Deportivo", "Semideportivo"];
 
 export default function CatalogGrid({ cars }: CatalogGridProps) {

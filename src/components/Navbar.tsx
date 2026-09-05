@@ -64,9 +64,11 @@ export default function Navbar() {
                       <h4 className="text-xs uppercase font-semibold tracking-wider text-white/40 mb-3">Nuestras Marcas</h4>
                       <div className="flex flex-col gap-2">
                         <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Mercedes-Benz</Link>
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">AMG</Link>
                         <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Porsche</Link>
+                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Lamborghini</Link>
+                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Bugatti</Link>
                         <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Ferrari</Link>
+                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Pagani</Link>
                       </div>
                     </div>
                   </div>
