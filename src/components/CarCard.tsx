@@ -30,7 +30,7 @@ export default function CarCard({ car, index }: { car: Vehiculo; index: number }
         <img 
           src={car.imagenUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2000&auto=format&fit=crop"} 
           alt={`${car.marca} ${car.modelo}`} 
-          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out"
+          className="object-contain w-full h-full bg-black/50 group-hover:scale-110 transition-transform duration-700 ease-in-out"
         />
         
         {/* Título sobrepuesto en la imagen */}

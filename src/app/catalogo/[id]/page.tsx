@@ -33,7 +33,7 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
             <img 
               src={car.imagenUrl || ""} 
               alt={`${car.marca} ${car.modelo}`} 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain bg-black/50"
             />
             <div className="absolute top-4 right-4">
               <span className={`px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md ${
