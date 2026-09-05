@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LocadedCar 🏎️
 
-## Getting Started
+Plataforma premium para la gestión, catálogo y exhibición de vehículos deportivos y semideportivos, diseñada con una estética sofisticada de alta gama (*translucent liquid glass* / estilo Apple).
 
-First, run the development server:
+## 🚀 Tecnologías Principales
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend:** Next.js 15 (App Router), React, Tailwind CSS (Glassmorphism UI).
+- **Animaciones:** Framer Motion para micro-interacciones fluidas.
+- **Base de Datos & ORM:** Prisma ORM con SQLite (migrable a PostgreSQL para producción).
+
+---
+
+## 📊 Modelo de Base de Datos (Entity-Relationship)
+
+El siguiente modelo ilustra la estructura de la base de datos gestionada mediante Prisma. GitHub renderiza esto automáticamente como una imagen/diagrama:
+
+```mermaid
+erDiagram
+    VEHICULO {
+        String id PK
+        String marca
+        String modelo
+        Int anio
+        Float precio
+        String tipo "deportivo o semideportivo"
+        String estado "disponible o vendido"
+        String imagenUrl
+        String detalles
+        DateTime createdAt
+        DateTime updatedAt
+    }
+    
+    CLIENTE {
+        String id PK
+        String nombre
+        String correo
+        String telefono
+        DateTime createdAt
+        DateTime updatedAt
+    }
+    
+    VENDEDOR {
+        String id PK
+        String nombre
+        String usuario
+        String contrasena
+        DateTime createdAt
+        DateTime updatedAt
+    }
+    
+    TRANSACCION {
+        String id PK
+        DateTime fecha
+        Float montoTotal
+        String vehiculoId FK
+        String clienteId FK
+        String vendedorId FK
+    }
+    
+    CLIENTE ||--o{ TRANSACCION : "realiza"
+    VEHICULO ||--o{ TRANSACCION : "es parte de"
+    VENDEDOR ||--o{ TRANSACCION : "gestiona"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Instalación y Desarrollo Local
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Instala las dependencias:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+2. Configura la base de datos (SQLite por defecto):
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. Inicia el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la plataforma en funcionamiento.
