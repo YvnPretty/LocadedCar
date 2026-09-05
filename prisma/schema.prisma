@@ -21,6 +21,8 @@ model Vehiculo {
   imagenUrl    String?       // URL de la imagen principal
   detalles     String?       // Especificaciones técnicas
   
+  colores      ColorVariante[]
+  
   transacciones Transaccion[]
   
   createdAt    DateTime      @default(now())
@@ -64,4 +66,14 @@ model Transaccion {
   
   vendedorId   String
   vendedor     Vendedor      @relation(fields: [vendedorId], references: [id])
+}
+
+model ColorVariante {
+  id           String        @id @default(uuid())
+  nombre       String
+  hex          String
+  imagenUrl    String
+  
+  vehiculoId   String
+  vehiculo     Vehiculo      @relation(fields: [vehiculoId], references: [id], onDelete: Cascade)
 }

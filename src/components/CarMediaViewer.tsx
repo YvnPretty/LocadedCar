@@ -1,26 +1,25 @@
 "use client";
 
 import { useState, MouseEvent } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
+
+interface DBColor {
+  nombre: string;
+  hex: string;
+  imagenUrl: string;
+}
 
 interface CarMediaViewerProps {
   imageUrl: string;
   brand: string;
   model: string;
   status: string;
+  dbColors?: DBColor[];
 }
 
-const COLORS = [
-  { name: "Original", hex: "#ffffff", hueRotate: "0deg", saturate: "1" },
-  { name: "Rojo Carmín", hex: "#d91e18", hueRotate: "150deg", saturate: "1.5" },
-  { name: "Azul Eléctrico", hex: "#1e90ff", hueRotate: "220deg", saturate: "1.2" },
-  { name: "Amarillo Giallo", hex: "#ffd700", hueRotate: "60deg", saturate: "1.8" },
-  { name: "Verde Ácido", hex: "#32cd32", hueRotate: "100deg", saturate: "1.5" },
-  { name: "Morado Místico", hex: "#8a2be2", hueRotate: "280deg", saturate: "1.4" },
-];
-
-export default function CarMediaViewer({ imageUrl, brand, model, status }: CarMediaViewerProps) {
-  const [selectedColor, setSelectedColor] = useState(COLORS[0]);
+export default function CarMediaViewer({ imageUrl, brand, model, status, dbColors = [] }: CarMediaViewerProps) {
+  // Si hay colores en DB, usamos el primero como default. Si no, usamos null.
+  const [selectedDBColor, setSelectedDBColor] = useState<DBColor | null>(dbColors.length > 0 ? dbColors[0] : null);
 
   // Framer motion Parallax / Tilt effect variables
   const x = useMotionValue(0);
@@ -37,7 +36,6 @@ export default function CarMediaViewer({ imageUrl, brand, model, status }: CarMe
     const width = rect.width;
     const height = rect.height;
     
-    // Calculate mouse position relative to center of the element (-0.5 to 0.5)
     const mouseX = (e.clientX - rect.left) / width - 0.5;
     const mouseY = (e.clientY - rect.top) / height - 0.5;
     
@@ -50,11 +48,13 @@ export default function CarMediaViewer({ imageUrl, brand, model, status }: CarMe
     y.set(0);
   };
 
+  const currentImage = selectedDBColor ? selectedDBColor.imagenUrl : imageUrl;
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Visualizador Principal Interactivo (Sin Botones) */}
+      {/* Visualizador Principal Interactivo */}
       <div 
-        className="relative aspect-video rounded-3xl overflow-hidden glass cursor-crosshair shadow-2xl"
+        className="relative aspect-video rounded-3xl overflow-hidden glass shadow-2xl cursor-crosshair bg-black/5"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ perspective: 1000 }}
@@ -63,14 +63,20 @@ export default function CarMediaViewer({ imageUrl, brand, model, status }: CarMe
           style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
           className="w-full h-full relative"
         >
-          <img 
-            src={imageUrl} 
-            alt={`${brand} ${model}`} 
-            className="w-full h-full object-cover scale-110 pointer-events-none transition-all duration-300 ease-in-out"
-            style={{ 
-              filter: `hue-rotate(${selectedColor.hueRotate}) saturate(${selectedColor.saturate})`
-            }}
-          />
+          {/* AnimatePresence for smooth crossfades between images */}
+          <AnimatePresence mode="wait">
+            <motion.img 
+              key={currentImage} // Cambiar la key fuerza el remount y la animación
+              src={currentImage} 
+              alt={`${brand} ${model}`} 
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1.1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+          </AnimatePresence>
+
           {/* Brillo dinámico superpuesto para más realismo */}
           <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none mix-blend-overlay" />
         </motion.div>
@@ -85,30 +91,32 @@ export default function CarMediaViewer({ imageUrl, brand, model, status }: CarMe
         </div>
       </div>
 
-      {/* Selector de Colores Integrado */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 glass-panel p-5 rounded-2xl">
-        <span className="text-sm text-white/70 tracking-wide uppercase font-medium">
-          Color: <span className="text-white ml-2">{selectedColor.name}</span>
-        </span>
-        <div className="flex gap-4">
-          {COLORS.map((color) => (
-            <button
-              key={color.name}
-              onClick={() => setSelectedColor(color)}
-              className={`w-10 h-10 rounded-full border-2 transition-all duration-300 ease-out ${
-                selectedColor.name === color.name 
-                  ? 'border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.4)]' 
-                  : 'border-white/20 hover:scale-110 hover:border-white/50 opacity-70 hover:opacity-100'
-              }`}
-              style={{ 
-                backgroundColor: color.hex,
-                background: color.hex === '#ffffff' ? 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)' : color.hex
-              }}
-              aria-label={color.name}
-            />
-          ))}
+      {/* Selector de Colores Integrado (Solo se muestra si el auto tiene variaciones de color en DB) */}
+      {dbColors.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 glass-panel p-5 rounded-2xl">
+          <span className="text-sm text-white/70 tracking-wide uppercase font-medium">
+            Configuración: <span className="text-white ml-2">{selectedDBColor?.nombre}</span>
+          </span>
+          <div className="flex gap-4">
+            {dbColors.map((color) => (
+              <button
+                key={color.nombre}
+                onClick={() => setSelectedDBColor(color)}
+                className={`w-10 h-10 rounded-full border-2 transition-all duration-300 ease-out ${
+                  selectedDBColor?.nombre === color.nombre 
+                    ? 'border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.4)]' 
+                    : 'border-white/20 hover:scale-110 hover:border-white/50 opacity-70 hover:opacity-100'
+                }`}
+                style={{ 
+                  backgroundColor: color.hex,
+                  background: color.hex.toLowerCase() === '#ffffff' ? 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)' : color.hex
+                }}
+                aria-label={color.nombre}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

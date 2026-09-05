@@ -13,7 +13,8 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
   const { id } = await params;
   
   const car = await prisma.vehiculo.findUnique({
-    where: { id }
+    where: { id },
+    include: { colores: true }
   });
 
   if (!car) {
@@ -29,12 +30,13 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Columna Izquierda: Imagen / Visor 3D */}
+          {/* Columna Izquierda: Imagen / Visor Interactivo */}
           <CarMediaViewer 
             imageUrl={car.imagenUrl || ""}
             brand={car.marca}
             model={car.modelo}
             status={car.estado}
+            dbColors={car.colores}
           />
 
           {/* Columna Derecha: Detalles */}

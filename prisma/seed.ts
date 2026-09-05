@@ -3,16 +3,16 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  // Limpiar la base de datos antes de hacer seed
+  await prisma.colorVariante.deleteMany()
   await prisma.transaccion.deleteMany()
   await prisma.vehiculo.deleteMany()
   await prisma.cliente.deleteMany()
   await prisma.vendedor.deleteMany()
 
-  console.log('Seeding database with a wide range of premium sports cars...')
+  console.log('Seeding database with premium sports cars...')
 
-  // Insertar autos
-  const cars = await prisma.vehiculo.createMany({
+  // Insertar autos normales
+  await prisma.vehiculo.createMany({
     data: [
       {
         marca: 'Porsche',
@@ -23,16 +23,6 @@ async function main() {
         estado: 'disponible',
         imagenUrl: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?q=80&w=2000&auto=format&fit=crop',
         detalles: '520 hp, 0-100 km/h en 3.2s. Aerodinámica activa avanzada.'
-      },
-      {
-        marca: 'Audi',
-        modelo: 'R8 V10 Performance',
-        anio: 2022,
-        precio: 3600000, 
-        tipo: 'deportivo',
-        estado: 'disponible',
-        imagenUrl: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2069&auto=format&fit=crop',
-        detalles: 'Motor V10 atmosférico de 5.2 litros, 620 hp, tracción quattro.'
       },
       {
         marca: 'Mercedes-Benz',
@@ -61,7 +51,7 @@ async function main() {
         precio: 12000000, 
         tipo: 'deportivo',
         estado: 'disponible',
-        imagenUrl: 'https://images.unsplash.com/photo-1544636331-e26879cd3d92?q=80&w=2000&auto=format&fit=crop',
+        imagenUrl: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=2000&auto=format&fit=crop',
         detalles: 'Motor V12 de 6.5L, 770 hp. Aerodinámica activa ALA 2.0. Pura agresividad.'
       },
       {
@@ -72,7 +62,7 @@ async function main() {
         tipo: 'deportivo',
         estado: 'disponible',
         imagenUrl: 'https://images.unsplash.com/photo-1600712242805-5f78671b24da?q=80&w=2000&auto=format&fit=crop',
-        detalles: 'Motor W16 quad-turbo de 8.0L, 1500 hp. El pináculo de la ingeniería automotriz hiperdeportiva.'
+        detalles: 'Motor W16 quad-turbo de 8.0L, 1500 hp. El pináculo de la ingeniería automotriz.'
       },
       {
         marca: 'Pagani',
@@ -81,8 +71,8 @@ async function main() {
         precio: 55000000, 
         tipo: 'deportivo',
         estado: 'disponible',
-        imagenUrl: 'https://images.unsplash.com/photo-1566274360936-ce22c71981cc?q=80&w=2000&auto=format&fit=crop',
-        detalles: 'Motor V12 biturbo de Mercedes-AMG, arte sobre ruedas en fibra de carbono y titanio.'
+        imagenUrl: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2000&auto=format&fit=crop',
+        detalles: 'Arte sobre ruedas en fibra de carbono y titanio.'
       },
       {
         marca: 'Ford',
@@ -91,8 +81,8 @@ async function main() {
         precio: 2500000, 
         tipo: 'semideportivo',
         estado: 'disponible',
-        imagenUrl: 'https://images.unsplash.com/photo-1584345604476-8cb5e3927500?q=80&w=2000&auto=format&fit=crop',
-        detalles: 'V8 supercargado de 5.2L con 760 hp. El muscle car definitivo para pista y calle.'
+        imagenUrl: 'https://images.unsplash.com/photo-1547038577-d7ff7d353aef?q=80&w=2000&auto=format&fit=crop',
+        detalles: 'V8 supercargado de 5.2L con 760 hp. El muscle car definitivo.'
       },
       {
         marca: 'Chevrolet',
@@ -101,23 +91,35 @@ async function main() {
         precio: 3100000, 
         tipo: 'deportivo',
         estado: 'disponible',
-        imagenUrl: 'https://images.unsplash.com/photo-1623869675781-80aa31012a5a?q=80&w=2000&auto=format&fit=crop',
-        detalles: 'Motor central V8 atmosférico plano de 5.5L con 670 hp. Rendimiento exótico americano.'
-      },
-      {
-        marca: 'Audi',
-        modelo: 'TT RS',
-        anio: 2022,
-        precio: 1800000, 
-        tipo: 'semideportivo',
-        estado: 'disponible',
-        imagenUrl: 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?q=80&w=2000&auto=format&fit=crop',
-        detalles: 'Motor de 5 cilindros turbo, 400 hp. Diseño icónico y ágil con tracción quattro.'
+        imagenUrl: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2000&auto=format&fit=crop',
+        detalles: 'Motor central V8 atmosférico plano de 5.5L con 670 hp.'
       }
     ]
   })
 
-  console.log('Seeded database with sample cars!')
+  // Insertar Audi R8 Especial con Colores
+  await prisma.vehiculo.create({
+    data: {
+      marca: 'Audi',
+      modelo: 'R8 V10 Exclusive',
+      anio: 2024,
+      precio: 4200000,
+      tipo: 'deportivo',
+      estado: 'disponible',
+      imagenUrl: '/renders/audi_r8_red.jpg',
+      detalles: 'Edición exclusiva con configurador fotorealista de fábrica.',
+      colores: {
+        create: [
+          { nombre: 'Rojo Carmín', hex: '#d91e18', imagenUrl: '/renders/audi_r8_red.jpg' },
+          { nombre: 'Azul Eléctrico', hex: '#1e90ff', imagenUrl: '/renders/audi_r8_blue.jpg' },
+          { nombre: 'Negro Obsidiana', hex: '#111111', imagenUrl: '/renders/audi_r8_black.jpg' },
+          { nombre: 'Plata Metálico', hex: '#d4d4d4', imagenUrl: '/renders/audi_r8_silver.jpg' },
+        ]
+      }
+    }
+  })
+
+  console.log('Seeded database with cars and color variants!')
 }
 
 main()
