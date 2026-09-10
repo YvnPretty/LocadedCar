@@ -83,6 +83,10 @@ export default function Navbar() {
           <Link href="/contacto" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
             Contacto
           </Link>
+          <Link href="/checkout" className="text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+            Comprar / Pago
+          </Link>
         </div>
 
         <div className="flex items-center gap-4">

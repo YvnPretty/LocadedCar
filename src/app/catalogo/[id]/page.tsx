@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Gauge, Settings2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Gauge, Settings2, CheckCircle2, CreditCard } from "lucide-react";
 import Link from "next/link";
 import CarMediaViewer from "@/components/CarMediaViewer";
 
@@ -74,6 +74,22 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+              {car.estado === "disponible" ? (
+                <Link 
+                  href={`/checkout?vehiculoId=${car.id}`} 
+                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-semibold flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(239,68,68,0.4)] transition-all duration-300 text-center"
+                >
+                  <CreditCard size={18} />
+                  Proceder al Pago / Apartar
+                </Link>
+              ) : (
+                <button 
+                  disabled 
+                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 text-white/40 cursor-not-allowed font-medium text-center"
+                >
+                  Unidad Vendida
+                </button>
+              )}
               <Link href="/contacto" className="glass-button w-full sm:w-auto px-8 py-4 rounded-full text-white font-medium flex items-center justify-center gap-2 group text-center">
                 <CheckCircle2 size={18} />
                 Agendar Cita
