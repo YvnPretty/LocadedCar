@@ -109,18 +109,18 @@ erDiagram
 
 El desarrollo del proyecto se rige bajo la matriz de trazabilidad estándar:
 
-| ID | Requisito Técnico Aplicado | Tipo | Prio | Estado | Entregable Asociado | Validación |
+| ID | Requisito | Tipo | Prio | Estado | Entregable Asociado | Validación |
 | :--- | :--- | :---: | :---: | :---: | :--- | :---: |
-| **RF-01** | Catálogo interactivo con React Server Components y filtrado de stock. | Funcional | Alta | Activo | `/catalogo` (`CatalogGrid.tsx`, `CarCard.tsx`) | Aceptado |
-| **RF-02** | Ficha de detalle con selector de color HEX y visor Three.js / R3F. | Funcional | Alta | Activo | `/catalogo/[id]` (`CarMediaViewer.tsx`) | Aceptado |
-| **RF-03** | Panel administrativo CRUD de inventario vehicular en tiempo real. | Funcional | Alta | Activo | `/admin/inventario` (`page.tsx`) | Aceptado |
-| **RF-04** | Módulo CRM para captura y gestión de prospectos y cotizaciones. | Funcional | Media | Activo | `/admin/clientes` (`page.tsx`) | Aceptado |
-| **RF-05** | Formulario web de cotización personalizada y contacto VIP. | Negocio | Media | Activo | `/contacto` (`page.tsx`) | Aceptado |
-| **RF-06** | Flujo completo de checkout, pago seguro y emisión de ticket digital. | Funcional | Alta | Activo | `/checkout` (`CheckoutClient.tsx`, `/api/checkout`) | Aceptado |
-| **RT-01** | Persistencia relacional con Prisma ORM sobre SQLite/PostgreSQL. | Técnico | Alta | Activo | `prisma/schema.prisma`, `seed.ts` | Aceptado |
-| **RT-02** | Arquitectura Next.js 16 con App Router, Turbopack y TypeScript. | Técnico | Alta | Activo | `next.config.ts`, `tsconfig.json` | Aceptado |
-| **RNF-01**| Sistema de diseño Glassmorphism con Tailwind CSS v4 y Framer Motion. | Calidad/UX| Alta | Activo | `globals.css`, `Navbar.tsx`, `Hero.tsx` | Aceptado |
-| **RNF-02**| Control de transacciones atómicas y bloqueo de ventas concurrentes. | Seguridad | Media | Activo | Modelo `Transaccion` & API Handler | Aceptado |
+| **RF-01** | Catálogo interactivo | Funcional | Alta | Activo | `/catalogo` (`CatalogGrid.tsx`, `CarCard.tsx`) | Aceptado |
+| **RF-02** | Ficha de detalle y selector de color | Funcional | Alta | Activo | `/catalogo/[id]` (`CarMediaViewer.tsx`) | Aceptado |
+| **RF-03** | Panel administrativo CRUD de inventario | Funcional | Alta | Activo | `/admin/inventario` (`page.tsx`) | Aceptado |
+| **RF-04** | Módulo CRM de administración de clientes | Funcional | Media | Activo | `/admin/clientes` (`page.tsx`) | Aceptado |
+| **RF-05** | Formulario de contacto y cotización VIP | Funcional | Media | Activo | `/contacto` (`page.tsx`) | Aceptado |
+| **RF-06** | Flujo completo de checkout y pago seguro | Funcional | Alta | Activo | `/checkout` (`CheckoutClient.tsx`, `/api/checkout`) | Aceptado |
+| **RT-01** | Base de datos relacional y modelo ORM | No Funcional | Alta | Activo | `prisma/schema.prisma`, `seed.ts` | Aceptado |
+| **RT-02** | Arquitectura Next.js 16 y compilación | No Funcional | Alta | Activo | `next.config.ts`, `tsconfig.json` | Aceptado |
+| **RNF-01**| Sistema de diseño Glassmorphism y UX | No Funcional | Alta | Activo | `globals.css`, `Navbar.tsx`, `Hero.tsx` | Aceptado |
+| **RNF-02**| Control transaccional y consistencia contable | No Funcional | Media | Activo | Modelo `Transaccion` & API Handler | Aceptado |
 
 > 📁 Archivos oficiales disponibles en:
 > * 📄 [Matriz de Trazabilidad en PDF (`docs/matriz_trazabilidad_requisitos_llenada.pdf`)](docs/matriz_trazabilidad_requisitos_llenada.pdf)
