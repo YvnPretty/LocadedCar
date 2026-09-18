@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
 import type { Vehiculo } from "@prisma/client";
 import CarCard from "@/components/CarCard";
 
@@ -10,134 +10,189 @@ interface CatalogGridProps {
   cars: Vehiculo[];
 }
 
-const BRANDS = ["Mercedes-Benz", "Porsche", "Audi", "Ferrari", "Lamborghini", "Bugatti", "Pagani", "Ford", "Chevrolet"];
-const TYPES = ["Deportivo", "Semideportivo"];
-
 export default function CatalogGrid({ cars }: CatalogGridProps) {
+  const brandOptions = useMemo(
+    () => Array.from(new Set(cars.map((car) => car.marca))).sort((a, b) => a.localeCompare(b)),
+    [cars],
+  );
+
+  const typeOptions = useMemo(
+    () =>
+      Array.from(new Set(cars.map((car) => car.tipo.charAt(0).toUpperCase() + car.tipo.slice(1)))).sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [cars],
+  );
+
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  
-  // Accordion state
   const [isBrandOpen, setIsBrandOpen] = useState(true);
   const [isTypeOpen, setIsTypeOpen] = useState(true);
 
   const toggleBrand = (brand: string) => {
-    setSelectedBrands(prev => 
-      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
-    );
+    setSelectedBrands((prev) => (prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]));
   };
 
   const toggleType = (type: string) => {
-    setSelectedTypes(prev => 
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    );
+    setSelectedTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]));
   };
 
   const filteredCars = useMemo(() => {
     return cars.filter((car) => {
       const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(car.marca);
-      
-      // Need to capitalize car.tipo because the seed uses lower case 'deportivo' but array has 'Deportivo'
       const capitalizedCarType = car.tipo.charAt(0).toUpperCase() + car.tipo.slice(1);
       const matchType = selectedTypes.length === 0 || selectedTypes.includes(capitalizedCarType);
-      
       return matchBrand && matchType;
     });
   }, [cars, selectedBrands, selectedTypes]);
 
   return (
     <div className="w-full flex flex-col md:flex-row gap-10 items-start">
-      
-      {/* Sidebar de Filtros (Columna Izquierda) */}
-      <aside className="w-full md:w-64 flex-shrink-0 mb-8 md:mb-0">
-        <h3 className="text-xl font-medium text-white mb-6">Filtros</h3>
+      <aside className="w-full md:w-72 flex-shrink-0 mb-8 md:mb-0">
+        <div className="glass rounded-3xl p-5 soft-ring">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-medium text-white">Filtros</h3>
+            <div className="rounded-full bg-white/5 p-2 text-white/70">
+              <SlidersHorizontal size={16} />
+            </div>
+          </div>
 
-        {/* Acordeón: Marca */}
-        <div className="border-t border-white/10 py-4">
-          <button 
-            onClick={() => setIsBrandOpen(!isBrandOpen)}
-            className="w-full flex items-center justify-between text-white/80 hover:text-white transition-colors mb-2"
-          >
-            <span className="font-medium">Marca</span>
-            {isBrandOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
-          
-          <AnimatePresence>
-            {isBrandOpen && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden flex flex-col gap-3 mt-4"
-              >
-                {BRANDS.map(brand => (
-                  <label key={brand} className="flex items-center gap-3 cursor-pointer group">
-                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                      selectedBrands.includes(brand) 
-                        ? 'bg-white border-white' 
-                        : 'border-white/30 group-hover:border-white/60 bg-transparent'
-                    }`}>
-                      {selectedBrands.includes(brand) && (
-                        <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </motion.svg>
-                      )}
-                    </div>
-                    <span className="text-white/70 group-hover:text-white transition-colors text-sm">{brand}</span>
-                  </label>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="border-t border-white/10 py-4">
+            <button
+              type="button"
+              onClick={() => setIsBrandOpen((prev) => !prev)}
+              className="w-full flex items-center justify-between text-white/80 hover:text-white transition-colors mb-2"
+            >
+              <span className="font-medium">Marca</span>
+              {isBrandOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </button>
+
+            <AnimatePresence>
+              {isBrandOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden flex flex-col gap-3 mt-4"
+                >
+                  {brandOptions.map((brand) => {
+                    const checked = selectedBrands.includes(brand);
+                    return (
+                      <button
+                        key={brand}
+                        type="button"
+                        onClick={() => toggleBrand(brand)}
+                        className={`flex items-center gap-3 cursor-pointer group px-2 py-2 rounded-xl text-left transition-colors ${
+                          checked ? "bg-white/8" : "hover:bg-white/5"
+                        }`}
+                        aria-pressed={checked}
+                      >
+                        <span
+                          className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                            checked ? "bg-white border-white" : "border-white/30 group-hover:border-white/60 bg-transparent"
+                          }`}
+                        >
+                          {checked && (
+                            <motion.svg
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-3 h-3 text-black"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={3}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </motion.svg>
+                          )}
+                        </span>
+                        <span className="text-white/70 group-hover:text-white transition-colors text-sm">{brand}</span>
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="border-t border-white/10 py-4">
+            <button
+              type="button"
+              onClick={() => setIsTypeOpen((prev) => !prev)}
+              className="w-full flex items-center justify-between text-white/80 hover:text-white transition-colors mb-2"
+            >
+              <span className="font-medium">Carrocerías</span>
+              {isTypeOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </button>
+
+            <AnimatePresence>
+              {isTypeOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden flex flex-col gap-3 mt-4"
+                >
+                  {typeOptions.map((type) => {
+                    const checked = selectedTypes.includes(type);
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => toggleType(type)}
+                        className={`flex items-center gap-3 cursor-pointer group px-2 py-2 rounded-xl text-left transition-colors ${
+                          checked ? "bg-white/8" : "hover:bg-white/5"
+                        }`}
+                        aria-pressed={checked}
+                      >
+                        <span
+                          className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                            checked ? "bg-white border-white" : "border-white/30 group-hover:border-white/60 bg-transparent"
+                          }`}
+                        >
+                          {checked && (
+                            <motion.svg
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-3 h-3 text-black"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={3}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </motion.svg>
+                          )}
+                        </span>
+                        <span className="text-white/70 group-hover:text-white transition-colors text-sm">{type}</span>
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {(selectedBrands.length > 0 || selectedTypes.length > 0) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedBrands([]);
+                setSelectedTypes([]);
+              }}
+              className="mt-4 w-full px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              Limpiar filtros
+            </button>
+          )}
         </div>
-
-        {/* Acordeón: Carrocerías / Tipo */}
-        <div className="border-t border-white/10 py-4">
-          <button 
-            onClick={() => setIsTypeOpen(!isTypeOpen)}
-            className="w-full flex items-center justify-between text-white/80 hover:text-white transition-colors mb-2"
-          >
-            <span className="font-medium">Carrocerías</span>
-            {isTypeOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
-          
-          <AnimatePresence>
-            {isTypeOpen && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden flex flex-col gap-3 mt-4"
-              >
-                {TYPES.map(type => (
-                  <label key={type} className="flex items-center gap-3 cursor-pointer group">
-                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                      selectedTypes.includes(type) 
-                        ? 'bg-white border-white' 
-                        : 'border-white/30 group-hover:border-white/60 bg-transparent'
-                    }`}>
-                      {selectedTypes.includes(type) && (
-                        <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </motion.svg>
-                      )}
-                    </div>
-                    <span className="text-white/70 group-hover:text-white transition-colors text-sm">{type}</span>
-                  </label>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
       </aside>
 
-      {/* Grid de Autos Animado (Columna Derecha) */}
       <div className="flex-1">
         <div className="flex justify-between items-center mb-6">
           <p className="text-white/50 text-sm font-medium">{filteredCars.length} modelos</p>
         </div>
-        
+
         <motion.div layout className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredCars.map((car, index) => (
@@ -155,19 +210,22 @@ export default function CatalogGrid({ cars }: CatalogGridProps) {
           </AnimatePresence>
         </motion.div>
 
-        {/* Empty State */}
         {filteredCars.length === 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center py-24 glass rounded-3xl mt-8"
           >
             <p className="text-white/50 text-lg">No se encontraron vehículos que coincidan con tu búsqueda.</p>
-            <button 
-              onClick={() => { setSelectedBrands([]); setSelectedTypes([]); }}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedBrands([]);
+                setSelectedTypes([]);
+              }}
               className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
             >
-              Limpiar Filtros
+              Limpiar filtros
             </button>
           </motion.div>
         )}
