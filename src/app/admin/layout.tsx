@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Car, Users, LayoutDashboard, LogOut } from "lucide-react";
+import { Car, Users, LayoutDashboard, LogOut, CreditCard } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -11,6 +11,10 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className="w-64 border-r border-white/10 bg-white/5 backdrop-blur-xl flex flex-col pt-24 px-4 pb-6">
         <div className="flex-1 space-y-2">
+          <Link href="/pos" className="flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all font-bold">
+            <CreditCard size={18} />
+            <span>Terminal POS</span>
+          </Link>
           <Link href="/admin/inventario" className="flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all">
             <Car size={18} />
             <span className="font-medium">Inventario</span>

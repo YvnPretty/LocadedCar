@@ -87,9 +87,16 @@ export default function Navbar() {
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
             Comprar / Pago
           </Link>
+          <Link href="/pos" className="text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            TERMINAL POS
+          </Link>
         </div>
 
         <div className="flex items-center gap-4">
+          <Link href="/pos" className="md:hidden px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
+            POS
+          </Link>
           <button className="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors">
             <Menu size={20} className="text-white/80" />
           </button>
