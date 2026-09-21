@@ -1,74 +1,36 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Settings2, Gauge } from "lucide-react";
+import { ArrowUpRight, Gauge, CalendarDays } from "lucide-react";
 import type { Vehiculo } from "@prisma/client";
 import Link from "next/link";
 
 export default function CarCard({ car, index }: { car: Vehiculo; index: number }) {
+  const price = new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0}).format(car.precio);
+  const available = car.estado === "disponible";
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
-      className="group relative rounded-3xl overflow-hidden glass hover:-translate-y-2 transition-all duration-500 hover:shadow-[0_8px_40px_rgba(255,255,255,0.05)] cursor-pointer"
-    >
-      {/* Etiqueta de Estado */}
-      <div className="absolute top-4 right-4 z-20">
-        <span className={`text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-md border ${
-          car.estado === "disponible" 
-            ? "bg-green-500/20 text-green-300 border-green-500/30" 
-            : "bg-red-500/20 text-red-300 border-red-500/30"
-        }`}>
-          {car.estado.toUpperCase()}
-        </span>
-      </div>
-
-      {/* Imagen del Auto */}
-      <div className="relative aspect-video overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
-        <img 
-          src={car.imagenUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2000&auto=format&fit=crop"} 
-          alt={`${car.marca} ${car.modelo}`} 
-          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out"
-        />
-        
-        {/* Título sobrepuesto en la imagen */}
-        <div className="absolute bottom-4 left-5 z-20">
-          <p className="text-white/60 text-sm font-medium tracking-wide uppercase">{car.marca}</p>
-          <h3 className="text-2xl font-bold text-white tracking-tight">{car.modelo}</h3>
-        </div>
-      </div>
-
-      {/* Detalles del Auto */}
-      <div className="p-6 bg-gradient-to-b from-[#0a0a0a]/90 to-[#111111]/90 backdrop-blur-xl">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-3xl font-light text-white">
-            {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(car.precio)}
-          </p>
-        </div>
-
-        <p className="text-white/50 text-sm mb-6 line-clamp-2 min-h-[40px]">
-          {car.detalles}
-        </p>
-
-        {/* Specs Rápidas */}
-        <div className="flex gap-4 mb-6">
-          <div className="flex items-center gap-2 text-xs text-white/70 bg-white/5 px-3 py-2 rounded-xl border border-white/5">
-            <Gauge size={14} className="text-white/40" />
-            <span>{car.anio}</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-white/70 bg-white/5 px-3 py-2 rounded-xl border border-white/5 uppercase">
-            <Settings2 size={14} className="text-white/40" />
-            <span>{car.tipo}</span>
+    <motion.article initial={{opacity:0,y:24}} animate={{opacity:1,y:0}} transition={{duration:.55,delay:Math.min(index*.06,.3)}} className="group overflow-hidden rounded-[1.75rem] border border-white/[0.09] bg-[#0a0a0b] transition duration-500 hover:-translate-y-1 hover:border-white/[0.18] hover:shadow-[0_30px_80px_rgba(0,0,0,.45)]">
+      <Link href={`/catalogo/${car.id}`} className="block">
+        <div className="relative aspect-[16/10] overflow-hidden bg-white/[0.03]">
+          <img src={car.imagenUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2000&auto=format&fit=crop"} alt={`${car.marca} ${car.modelo}`} className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.045]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/15" />
+          <div className="absolute left-5 top-5 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[9px] uppercase tracking-[.22em] text-white/65 backdrop-blur-xl">{car.tipo}</div>
+          <div className={`absolute right-5 top-5 rounded-full border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] backdrop-blur-xl ${available?"border-emerald-400/25 bg-emerald-400/10 text-emerald-300":"border-white/10 bg-black/35 text-white/50"}`}>{car.estado}</div>
+          <div className="absolute bottom-5 left-5 right-5">
+            <p className="text-[10px] uppercase tracking-[.28em] text-white/45">{car.marca}</p>
+            <h3 className="mt-1 text-2xl md:text-3xl font-medium tracking-[-.035em]">{car.modelo}</h3>
           </div>
         </div>
-
-        <Link href={`/catalogo/${car.id}`} className="w-full glass-button py-3 rounded-2xl text-white text-sm font-medium flex items-center justify-center gap-2 group-hover:bg-white/10 transition-colors">
-          {car.estado === "disponible" ? "Apartar unidad" : "Ver ficha"}
-          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </div>
-    </motion.div>
+        <div className="p-5 md:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div><p className="text-[10px] uppercase tracking-[.22em] text-white/30">Precio</p><p className="mt-1 text-xl font-medium tracking-tight">{price}</p></div>
+            <span className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition group-hover:bg-white group-hover:text-black"><ArrowUpRight size={18}/></span>
+          </div>
+          <div className="mt-5 flex items-center gap-2 border-t border-white/[0.07] pt-4 text-xs text-white/42">
+            <span className="inline-flex items-center gap-1.5"><CalendarDays size={13}/>{car.anio}</span><span className="text-white/15">/</span><span className="inline-flex items-center gap-1.5"><Gauge size={13}/>Performance</span>
+          </div>
+        </div>
+      </Link>
+    </motion.article>
   );
 }
