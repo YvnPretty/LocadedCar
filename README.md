@@ -128,6 +128,146 @@ El desarrollo del proyecto se rige bajo la matriz de trazabilidad estándar:
 
 ---
 
+## 🧭 Análisis y Diseño del Proyecto
+
+### Análisis de los requisitos del proyecto propuesto
+
+El análisis inició con la identificación del problema operativo de una agencia de vehículos de alta gama: exhibir unidades de forma atractiva, evitar la venta duplicada, registrar clientes y mantener control sobre inventario, pagos y ventas. A partir de este problema se identificaron los actores, procesos y restricciones del negocio:
+
+| Elemento | Resultado del análisis |
+| :--- | :--- |
+| Actores | Cliente comprador, asesor/cajero POS y administrador/gerente |
+| Procesos principales | Consultar catálogo, revisar una unidad, cotizar, apartar o comprar, registrar cliente y auditar la venta |
+| Información crítica | Vehículos, variantes de color, clientes, vendedores y transacciones |
+| Reglas de negocio | Una unidad no debe venderse dos veces; una venta debe asociar vehículo, cliente y vendedor; el estado del inventario debe actualizarse después de la operación |
+| Restricciones | Interfaz responsive, moneda MXN, separación de roles, persistencia relacional y comprobante de operación |
+
+Los requisitos se clasificaron en funcionales y no funcionales, se priorizaron por impacto comercial y se vincularon con una vista, componente, API o modelo de datos. La [matriz de trazabilidad](docs/matriz_trazabilidad_requisitos.csv) concentra esa relación y permite verificar que cada requisito tenga un entregable y un criterio de validación.
+
+### Delimitación del alcance del sistema
+
+**Dentro del alcance:**
+
+- Portal público para presentar la marca, consultar el catálogo, filtrar vehículos y revisar fichas técnicas.
+- Flujo de checkout con selección de modalidad, datos del comprador, método de pago simulado y comprobante digital.
+- Terminal POS para selección de unidades, alta de clientes, cobro multimodal simulado, emisión de ticket y corte de turno.
+- Portal administrativo separado para dashboard, inventario, CRM, cotizaciones y auditoría de ventas.
+- Persistencia con Prisma y SQLite en desarrollo, con posibilidad de migración a una base administrada en producción.
+- Diseño responsive para cliente, administrador y POS.
+
+**Fuera del alcance de esta versión:**
+
+- Cobros bancarios reales, conexión con adquirentes, SPEI o proveedores financieros.
+- Facturación fiscal electrónica, validación oficial de RFC y firma contractual con validez legal.
+- Gestión de usuarios con autenticación, permisos por cuenta y recuperación de contraseña.
+- Logística de entrega, seguimiento GPS, seguros y comunicación automática por WhatsApp.
+- Integración con inventarios externos, ERP, CRM de terceros o fuentes oficiales de vehículos.
+
+Esta delimitación evita presentar como implementadas capacidades que requieren proveedores, certificaciones o infraestructura adicional.
+
+### Modelo de casos de uso
+
+El modelo de casos de uso representa las interacciones principales entre los actores y el sistema:
+
+```mermaid
+flowchart LR
+  Cliente[Cliente comprador] --> Catalogo[Consultar catálogo]
+  Cliente --> Detalle[Consultar ficha del vehículo]
+  Cliente --> Checkout[Realizar apartado o compra]
+  Cliente --> Cita[Solicitar cita o cotización]
+
+  Cajero[Asesor / Cajero POS] --> VentaPOS[Procesar venta en POS]
+  Cajero --> ClientePOS[Registrar cliente]
+  Cajero --> Ticket[Emitir ticket y comprobante]
+  Cajero --> Corte[Consultar corte de turno]
+
+  Admin[Administrador / Gerente] --> Inventario[Administrar inventario]
+  Admin --> CRM[Consultar clientes y LTV]
+  Admin --> Auditoria[Consultar auditoría de ventas]
+  Admin --> KPIs[Consultar indicadores ejecutivos]
+
+  Checkout --> Persistencia[(Base de datos)]
+  VentaPOS --> Persistencia
+  Inventario --> Persistencia
+  Auditoria --> Persistencia
+```
+
+El diagrama permite comprobar que el portal público, la operación de mostrador y la supervisión gerencial son fronteras distintas, aunque comparten la información transaccional necesaria.
+
+### Modelo del dominio
+
+El dominio se construyó alrededor de la unidad vehicular y su ciclo comercial. `Vehiculo` es el agregado central; `ColorVariante` describe sus configuraciones, `Cliente` representa al comprador y `Vendedor` al responsable de la operación. `Transaccion` relaciona a los tres y conserva el importe, la fecha y la trazabilidad de la venta.
+
+```mermaid
+erDiagram
+  VEHICULO ||--o{ COLOR_VARIANTE : tiene
+  VEHICULO ||--o{ TRANSACCION : participa
+  CLIENTE ||--o{ TRANSACCION : realiza
+  VENDEDOR ||--o{ TRANSACCION : gestiona
+
+  VEHICULO {
+    String id PK
+    String marca
+    String modelo
+    Int anio
+    Float precio
+    String estado
+  }
+  COLOR_VARIANTE {
+    String id PK
+    String nombre
+    String hex
+    String vehiculoId FK
+  }
+  CLIENTE {
+    String id PK
+    String nombre
+    String correo UK
+    String telefono
+  }
+  VENDEDOR {
+    String id PK
+    String nombre
+    String usuario UK
+  }
+  TRANSACCION {
+    String id PK
+    DateTime fecha
+    Float montoTotal
+    String vehiculoId FK
+    String clienteId FK
+    String vendedorId FK
+  }
+```
+
+Este modelo permite aplicar una regla esencial del negocio: cada transacción identifica la unidad, el comprador y el responsable que la autorizó. Las operaciones de checkout y POS actualizan el estado del vehículo dentro del proceso transaccional.
+
+### Estudio de factibilidad técnica y operativa
+
+| Dimensión | Evaluación | Justificación |
+| :--- | :--- | :--- |
+| Técnica | Favorable | Next.js, TypeScript, Prisma y SQLite permiten construir, probar y desplegar el sistema con herramientas conocidas y una arquitectura modular. Railway ofrece ejecución del servidor y despliegue continuo desde GitHub. |
+| Operativa | Favorable | Los tres perfiles tienen vistas separadas y flujos acordes con su actividad: autoservicio para el cliente, rapidez para POS y control para gerencia. |
+| Económica | Favorable para un MVP | Se priorizaron componentes de código abierto y una base común para catálogo, checkout y administración. El costo inicial se concentra en infraestructura, dominio y futuros servicios de pago o facturación. |
+| Riesgos | Controlables | La persistencia SQLite requiere un volumen o migración a PostgreSQL en producción; los pagos reales, autenticación y facturación deben incorporarse mediante servicios especializados. |
+
+La relación costo-beneficio se justifica porque una sola plataforma cubre exhibición, captación, venta y auditoría. El beneficio esperado es reducir tareas manuales, evitar conflictos de inventario, acelerar la atención y disponer de información consolidada para decisiones comerciales. La primera versión mantiene bajo el costo de implementación y deja preparados los límites técnicos para crecer sin rehacer el dominio.
+
+### Metodología de desarrollo y uso de GitHub
+
+Se adoptó un enfoque **incremental y ágil**, entregando el sistema por módulos verificables: catálogo y fichas, checkout, POS, administración, persistencia y despliegue. Cada incremento se validó mediante compilación, pruebas de flujo en navegador y revisión de la matriz de trazabilidad.
+
+**GitHub** se utilizó como plataforma de apoyo para:
+
+- Control de versiones del código y documentación mediante Git.
+- Organización del trabajo por commits funcionales y ramas del proyecto.
+- Revisión del historial de cambios y recuperación de versiones.
+- Integración con Railway para el despliegue continuo desde `main`.
+
+Por tanto, GitHub es la herramienta de colaboración y configuración del flujo de entrega; la metodología aplicada al desarrollo es incremental/ágil, con validación continua de requisitos y entregables.
+
+---
+
 ## 🚀 Estructura del Proyecto
 
 ```text
@@ -228,5 +368,12 @@ npm run start
 
 ## 👤 Autor & Licencia
 
-Desarrollado por **YvngMolly** y el equipo de ingeniería de **LocadedCar**.  
+Desarrollado por el equipo de **LocadedCar**:
+
+- Granados Sánchez Azucena
+- Arteaga Villar Said Edgar
+- López Salazar
+- Vanegas Villar Lizbeth
+- Meza Corella Cesae
+
 Proyecto académico y demostrativo de alta gama para ingeniería de software.

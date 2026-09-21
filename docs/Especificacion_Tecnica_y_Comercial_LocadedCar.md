@@ -3,7 +3,7 @@
 
 **Versión del Software:** 2.0 Enterprise Commercial Edition  
 **Fecha de Publicación:** Septiembre de 2026  
-**Equipo de Ingeniería:** BYTE-FORCE / Equipo de Desarrollo y Arquitectura Web  
+**Equipo de Ingeniería:** Granados Sánchez Azucena, Arteaga Villar Said Edgar, López Salazar, Vanegas Villar Lizbeth y Meza Corella Cesae
 **Estándar de Calidad:** ISO 21500 (Dirección de Proyectos) / PMBOK 5ta Ed.
 
 ---
