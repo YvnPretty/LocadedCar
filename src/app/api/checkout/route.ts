@@ -27,65 +27,56 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Verificar existencia del vehículo
-    const vehiculo = await prisma.vehiculo.findUnique({
-      where: { id: vehiculoId },
-      include: { colores: true }
-    });
-
-    if (!vehiculo) {
-      return NextResponse.json(
-        { error: "El vehículo seleccionado no existe en el catálogo." },
-        { status: 404 }
-      );
-    }
-
-    // 2. Obtener o crear Vendedor Concierge VIP por defecto
-    let vendedor = await prisma.vendedor.findFirst();
-    if (!vendedor) {
-      vendedor = await prisma.vendedor.create({
-        data: {
-          nombre: "Asesor Concierge LocadedCar VIP",
-          usuario: "concierge_vip",
-          contrasena: "secret_vip_2026"
-        }
+    const result = await prisma.$transaction(async (tx) => {
+      const vehiculo = await tx.vehiculo.findUnique({
+        where: { id: vehiculoId },
+        include: { colores: true }
       });
-    }
 
-    // 3. Crear o actualizar datos del Cliente
-    const cliente = await prisma.cliente.upsert({
-      where: { correo },
-      update: {
-        nombre,
-        telefono: telefono || undefined
-      },
-      create: {
-        nombre,
-        correo,
-        telefono: telefono || undefined
+      if (!vehiculo) {
+        throw new Error("El vehículo seleccionado no existe en el catálogo.");
       }
-    });
 
-    // 4. Registrar la Transacción oficial en base de datos
-    const transaccion = await prisma.transaccion.create({
-      data: {
-        montoTotal: Number(montoTotal) || vehiculo.precio,
-        vehiculoId: vehiculo.id,
-        clienteId: cliente.id,
-        vendedorId: vendedor.id
-      },
-      include: {
-        vehiculo: true,
-        cliente: true,
-        vendedor: true
+      const reservado = await tx.vehiculo.updateMany({
+        where: { id: vehiculo.id, estado: "disponible" },
+        data: { estado: "vendido" }
+      });
+
+      if (reservado.count !== 1) {
+        throw new Error("Esta unidad ya no está disponible; otro proceso la reservó primero.");
       }
+
+      let vendedor = await tx.vendedor.findFirst();
+      if (!vendedor) {
+        vendedor = await tx.vendedor.create({
+          data: {
+            nombre: "Asesor Concierge LocadedCar VIP",
+            usuario: "concierge_vip",
+            contrasena: "secret_vip_2026"
+          }
+        });
+      }
+
+      const cliente = await tx.cliente.upsert({
+        where: { correo },
+        update: { nombre, telefono: telefono || undefined, direccion, ciudad, estado, rfc },
+        create: { nombre, correo, telefono: telefono || undefined, direccion, ciudad, estado, rfc }
+      });
+
+      const transaccion = await tx.transaccion.create({
+        data: {
+          montoTotal: Number(montoTotal) || vehiculo.precio,
+          vehiculoId: vehiculo.id,
+          clienteId: cliente.id,
+          vendedorId: vendedor.id
+        },
+        include: { vehiculo: true, cliente: true, vendedor: true }
+      });
+
+      return { vehiculo, cliente, vendedor, transaccion };
     });
 
-    // 5. Actualizar estado del vehículo a "vendido"
-    await prisma.vehiculo.update({
-      where: { id: vehiculo.id },
-      data: { estado: "vendido" }
-    });
+    const { vehiculo, cliente, vendedor, transaccion } = result;
 
     return NextResponse.json({
       success: true,
@@ -107,10 +98,10 @@ export async function POST(request: Request) {
         nombre: cliente.nombre,
         correo: cliente.correo,
         telefono: cliente.telefono,
-        direccion,
-        ciudad,
-        estado,
-        rfc
+        direccion: cliente.direccion,
+        ciudad: cliente.ciudad,
+        estado: cliente.estado,
+        rfc: cliente.rfc
       },
       vendedor: {
         nombre: vendedor.nombre
@@ -118,9 +109,10 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.error("Error al procesar pago:", error);
+    const status = error.message?.includes("ya no está disponible") ? 409 : 500;
     return NextResponse.json(
       { error: error.message || "Error interno al procesar el pago." },
-      { status: 500 }
+      { status }
     );
   }
 }

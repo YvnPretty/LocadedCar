@@ -34,6 +34,10 @@ model Cliente {
   nombre       String
   correo       String        @unique
   telefono     String?
+  direccion    String?
+  ciudad       String?
+  estado       String?
+  rfc          String?
   
   transacciones Transaccion[]
   

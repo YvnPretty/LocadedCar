@@ -162,6 +162,12 @@ export default async function AdminClientesPage() {
                         </a>
                       </div>
                     )}
+                    {c.direccion && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-neutral-500">Entrega:</span>
+                        <span className="text-neutral-300 truncate">{c.direccion}{c.ciudad ? `, ${c.ciudad}` : ""}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

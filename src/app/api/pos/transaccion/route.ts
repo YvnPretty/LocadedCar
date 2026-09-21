@@ -51,8 +51,13 @@ export async function POST(request: Request) {
         throw new Error("El vehículo no existe en el catálogo.");
       }
 
-      if (vehiculo.estado === "vendido") {
-        throw new Error("Esta unidad ya ha sido vendida previamente.");
+      const reservado = await tx.vehiculo.updateMany({
+        where: { id: vehiculo.id, estado: "disponible" },
+        data: { estado: modalidad === "apartado_10" ? "apartado" : "vendido" }
+      });
+
+      if (reservado.count !== 1) {
+        throw new Error("Esta unidad ya no está disponible; otro proceso la reservó primero.");
       }
 
       // 2. Obtener o crear Vendedor en turno
@@ -79,12 +84,20 @@ export async function POST(request: Request) {
         where: { correo: clienteCorreo },
         update: {
           nombre: cliente.nombre,
-          telefono: cliente.telefono || undefined
+          telefono: cliente.telefono || undefined,
+          direccion: cliente.direccion,
+          ciudad: cliente.ciudad,
+          estado: cliente.estado,
+          rfc: cliente.rfc
         },
         create: {
           nombre: cliente.nombre,
           correo: clienteCorreo,
-          telefono: cliente.telefono || undefined
+          telefono: cliente.telefono || undefined,
+          direccion: cliente.direccion,
+          ciudad: cliente.ciudad,
+          estado: cliente.estado,
+          rfc: cliente.rfc
         }
       });
 
@@ -107,13 +120,7 @@ export async function POST(request: Request) {
         }
       });
 
-      // 6. Actualizar estado del vehículo
-      await tx.vehiculo.update({
-        where: { id: vehiculo.id },
-        data: { estado: nuevoEstado }
-      });
-
-      // 7. Buscar variante de color si fue seleccionada
+      // Buscar variante de color si fue seleccionada
       let colorSeleccionado = null;
       if (colorVarianteId) {
         colorSeleccionado = vehiculo.colores.find((c) => c.id === colorVarianteId) || null;
@@ -166,9 +173,10 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.error("Error al procesar venta POS:", error);
+    const status = error.message?.includes("ya no está disponible") ? 409 : 500;
     return NextResponse.json(
       { error: error.message || "Error interno al procesar la venta en POS." },
-      { status: 500 }
+      { status }
     );
   }
 }

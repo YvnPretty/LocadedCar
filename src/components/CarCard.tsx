@@ -65,7 +65,7 @@ export default function CarCard({ car, index }: { car: Vehiculo; index: number }
         </div>
 
         <Link href={`/catalogo/${car.id}`} className="w-full glass-button py-3 rounded-2xl text-white text-sm font-medium flex items-center justify-center gap-2 group-hover:bg-white/10 transition-colors">
-          Ver Detalles
+          {car.estado === "disponible" ? "Apartar unidad" : "Ver ficha"}
           <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
