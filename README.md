@@ -205,6 +205,19 @@ npm run dev
 ```
 Abre en tu navegador: [http://localhost:3000](http://localhost:3000)
 
+### Despliegue en producción
+
+La aplicación está publicada en Railway:
+
+**[https://locadedcar-production.up.railway.app](https://locadedcar-production.up.railway.app)**
+
+Rutas principales:
+
+- [Catálogo](https://locadedcar-production.up.railway.app/catalogo)
+- [Checkout](https://locadedcar-production.up.railway.app/checkout)
+- [Panel administrativo](https://locadedcar-production.up.railway.app/admin)
+- [Auditoría de ventas](https://locadedcar-production.up.railway.app/admin/ventas)
+
 ### 6. Compilar y Levantar en Producción
 ```bash
 npm run build
