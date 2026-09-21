@@ -1,4 +1,5 @@
 import { Phone, Mail, MapPin } from "lucide-react";
+import ContactoForm from "./ContactoForm";
 
 export default function Contacto() {
   return (
@@ -17,27 +18,7 @@ export default function Contacto() {
           {/* Formulario */}
           <div className="glass p-8 rounded-3xl">
             <h3 className="text-2xl font-medium text-white mb-6">Déjanos tus datos</h3>
-            <form className="flex flex-col gap-4">
-              <div>
-                <label className="block text-sm text-white/50 mb-2">Nombre Completo</label>
-                <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="Ej. Juan Pérez" />
-              </div>
-              <div>
-                <label className="block text-sm text-white/50 mb-2">Correo Electrónico</label>
-                <input type="email" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="juan@ejemplo.com" />
-              </div>
-              <div>
-                <label className="block text-sm text-white/50 mb-2">Teléfono</label>
-                <input type="tel" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="Tu número de contacto" />
-              </div>
-              <div>
-                <label className="block text-sm text-white/50 mb-2">Mensaje o Auto de Interés</label>
-                <textarea rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="Me interesa agendar una cita para..."></textarea>
-              </div>
-              <button type="button" className="glass-button w-full py-4 rounded-xl text-white font-medium mt-4">
-                Enviar Solicitud
-              </button>
-            </form>
+            <ContactoForm />
           </div>
 
           {/* Info de Contacto */}

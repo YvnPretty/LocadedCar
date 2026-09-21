@@ -18,9 +18,9 @@ export const dynamic = "force-dynamic";
 const prisma = new PrismaClient();
 
 export default async function AdminCotizacionesPage() {
-  const clientes = await prisma.cliente.findMany({
+  const cotizaciones = await prisma.cotizacion.findMany({
     orderBy: { createdAt: "desc" },
-    take: 10
+    take: 20
   });
 
   const vehiculos = await prisma.vehiculo.findMany({
@@ -57,7 +57,7 @@ export default async function AdminCotizacionesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
           <span className="text-[10px] font-mono uppercase text-amber-400">Prospectos Activos</span>
-          <p className="text-2xl font-black text-white font-mono mt-1">{clientes.length}</p>
+          <p className="text-2xl font-black text-white font-mono mt-1">{cotizaciones.length}</p>
           <span className="text-[11px] text-neutral-400">Esperando contacto del asesor</span>
         </div>
         <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
@@ -79,7 +79,11 @@ export default async function AdminCotizacionesPage() {
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {clientes.map((c, idx) => {
+          {cotizaciones.length === 0 ? (
+            <div className="md:col-span-2 p-8 rounded-2xl bg-white/[0.02] border border-white/10 text-center text-sm text-neutral-500">
+              Aún no hay solicitudes de contacto registradas.
+            </div>
+          ) : cotizaciones.map((c, idx) => {
             const autoInteres = vehiculos[idx % (vehiculos.length || 1)];
 
             return (
@@ -97,7 +101,8 @@ export default async function AdminCotizacionesPage() {
                     </span>
                   </div>
 
-                  <h4 className="text-base font-bold text-white mt-2.5">{c.nombre}</h4>
+                      <h4 className="text-base font-bold text-white mt-2.5">{c.nombre}</h4>
+                      <p className="text-sm text-neutral-300 mt-2">{c.mensaje}</p>
                   
                   {autoInteres && (
                     <div className="mt-2 p-2 rounded-lg bg-white/5 border border-white/5 flex items-center gap-2 text-xs">
