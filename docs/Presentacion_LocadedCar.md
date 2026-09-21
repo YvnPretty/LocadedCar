@@ -70,26 +70,34 @@ El análisis partió del problema operativo y se tradujo a procesos observables:
 
 ---
 
-## Diapositiva 5. Alcance del sistema
+## Diapositiva 5. Delimitación y fronteras del sistema
 
-### Incluido
+### Incluye
 
-- Catálogo y ficha técnica.
-- Checkout con compra o apartado simulado.
-- POS con clientes, modalidades y ticket.
-- Dashboard, inventario, CRM y auditoría.
-- Diseño responsive y despliegue continuo.
+- Portal público, catálogo y fichas técnicas.
+- Checkout y POS con pago simulado.
+- Inventario, clientes, cotizaciones y auditoría.
+- Persistencia de vehículos, clientes, vendedores y transacciones.
 
-### Delimitado
+### Entradas
 
-- No se realizan cobros bancarios reales.
-- No hay facturación fiscal electrónica.
-- No existe autenticación productiva todavía.
-- La logística y el seguimiento GPS quedan fuera.
+- Datos de vehículos y clientes.
+- Modalidad, método de pago e importe.
+- Altas y actualizaciones administrativas.
+
+### Salidas
+
+- Totales, anticipos y cambio simulado.
+- Folios, comprobantes y tickets.
+- Estados de inventario, indicadores y auditoría.
 
 ### Speech
 
-Delimitar el alcance fue necesario para diferenciar una demostración funcional de un producto financiero completamente certificado. El sistema implementa el flujo de negocio y la persistencia de la operación, pero el pago de tarjeta es simulado. También se dejaron explícitamente fuera la facturación fiscal, la autenticación y la logística. Esta delimitación protege la validez técnica del proyecto: no se presentan como resueltas capacidades que dependen de proveedores externos, certificaciones o infraestructura adicional.
+Delimitar el sistema significa definir sus fronteras y su responsabilidad. LocadedCar recibe información de vehículos, compradores y operaciones comerciales; procesa esa información dentro del dominio de la agencia; y produce catálogos, cálculos, comprobantes, cambios de estado y reportes administrativos. Interactúa con Prisma, SQLite, GitHub, Railway y los recursos multimedia, pero no controla esos servicios como parte del negocio.
+
+### Speech: exclusiones y responsabilidad
+
+El sistema no autoriza cargos bancarios reales, no emite facturas fiscales, no valida oficialmente un RFC, no autentica usuarios para un ambiente productivo y no coordina la entrega física del vehículo. Esas responsabilidades pertenecen a bancos, proveedores fiscales, servicios de identidad y operadores logísticos. Por tanto, el alcance termina en la coordinación, simulación y registro del flujo comercial dentro de la aplicación. Esta frontera permite evaluar el proyecto con precisión y evita afirmar que un prototipo funcional reemplaza servicios certificados.
 
 ---
 
@@ -132,7 +140,7 @@ El modelo de casos de uso representa qué puede hacer cada actor, no cómo está
 
 ---
 
-## Diapositiva 8. Modelo del dominio
+## Diapositiva 8. 4. Representación del modelo de dominio
 
 ```mermaid
 erDiagram
@@ -174,7 +182,7 @@ Los flujos se diseñaron para reducir pasos innecesarios. El cliente puede llega
 
 ---
 
-## Diapositiva 10. Factibilidad técnica y operativa
+## Diapositiva 10. 5. Estudio de factibilidad técnica y operativa: costo-beneficio
 
 | Área | Conclusión |
 | :--- | :--- |
@@ -189,7 +197,7 @@ La factibilidad técnica es favorable porque el stack es conocido, modular y des
 
 ---
 
-## Diapositiva 11. Metodología de desarrollo
+## Diapositiva 11. 6. Metodología de desarrollo de software
 
 - Enfoque incremental y ágil.
 - Entrega por módulos verificables.

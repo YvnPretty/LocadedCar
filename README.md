@@ -144,26 +144,51 @@ El análisis inició con la identificación del problema operativo de una agenci
 
 Los requisitos se clasificaron en funcionales y no funcionales, se priorizaron por impacto comercial y se vincularon con una vista, componente, API o modelo de datos. La [matriz de trazabilidad](docs/matriz_trazabilidad_requisitos.csv) concentra esa relación y permite verificar que cada requisito tenga un entregable y un criterio de validación.
 
-### Delimitación del alcance del sistema
+### Delimitación y fronteras del sistema
 
-**Dentro del alcance:**
+La delimitación establece hasta dónde es responsable LocadedCar y qué actividades pertenecen a actores o servicios externos.
+
+**Qué incluye el sistema:**
 
 - Portal público para presentar la marca, consultar el catálogo, filtrar vehículos y revisar fichas técnicas.
-- Flujo de checkout con selección de modalidad, datos del comprador, método de pago simulado y comprobante digital.
-- Terminal POS para selección de unidades, alta de clientes, cobro multimodal simulado, emisión de ticket y corte de turno.
-- Portal administrativo separado para dashboard, inventario, CRM, cotizaciones y auditoría de ventas.
-- Persistencia con Prisma y SQLite en desarrollo, con posibilidad de migración a una base administrada en producción.
-- Diseño responsive para cliente, administrador y POS.
+- Checkout para capturar datos del comprador, elegir compra o apartado, simular el método de pago y emitir un comprobante.
+- Terminal POS para seleccionar una unidad, registrar al cliente, calcular el importe, registrar la operación y emitir ticket.
+- Portal administrativo para dashboard, inventario, CRM, cotizaciones y auditoría de ventas.
+- Persistencia relacional de vehículos, colores, clientes, vendedores y transacciones.
+- Interfaces responsive separadas para cliente, personal operativo y administración.
 
-**Fuera del alcance de esta versión:**
+**Entradas que recibe:**
 
-- Cobros bancarios reales, conexión con adquirentes, SPEI o proveedores financieros.
+- Datos del vehículo, precio, estado, especificaciones y variantes de color.
+- Datos del comprador: nombre, correo, teléfono, dirección y RFC capturado para facturación.
+- Selección de modalidad, método de pago, descuento, importe recibido y notas de venta.
+- Altas y actualizaciones de inventario, clientes y cotizaciones realizadas por personal autorizado.
+
+**Salidas que genera:**
+
+- Catálogo y ficha técnica de cada unidad.
+- Total a pagar, anticipo, cambio o cálculo de financiamiento simulado.
+- Comprobante digital, folio de transacción y ticket POS.
+- Actualización del estado del vehículo y registro histórico de la operación.
+- Indicadores administrativos, cartera de clientes y auditoría de ventas.
+
+**Sistemas y servicios con los que interactúa:**
+
+- Prisma ORM y SQLite para persistencia local del dominio.
+- Runtime Node.js de Next.js para renderizado, rutas y API.
+- GitHub para control de versiones y repositorio del código.
+- Railway para ejecutar y desplegar la aplicación.
+- Imágenes externas de Unsplash y recursos locales para el catálogo.
+
+**Qué queda fuera de la responsabilidad del sistema:**
+
+- Autorización bancaria real, conexión con adquirentes, SPEI o proveedores financieros.
 - Facturación fiscal electrónica, validación oficial de RFC y firma contractual con validez legal.
-- Gestión de usuarios con autenticación, permisos por cuenta y recuperación de contraseña.
+- Autenticación productiva, gestión de sesiones, roles por cuenta y recuperación de contraseña.
 - Logística de entrega, seguimiento GPS, seguros y comunicación automática por WhatsApp.
 - Integración con inventarios externos, ERP, CRM de terceros o fuentes oficiales de vehículos.
 
-Esta delimitación evita presentar como implementadas capacidades que requieren proveedores, certificaciones o infraestructura adicional.
+En consecuencia, LocadedCar es responsable de coordinar y registrar el flujo comercial dentro de su dominio; no es responsable de aprobar pagos, emitir documentos fiscales oficiales ni ejecutar la entrega física del vehículo.
 
 ### Modelo de casos de uso
 
@@ -194,7 +219,7 @@ flowchart LR
 
 El diagrama permite comprobar que el portal público, la operación de mostrador y la supervisión gerencial son fronteras distintas, aunque comparten la información transaccional necesaria.
 
-### Modelo del dominio
+### 4. Representación del modelo de dominio
 
 El dominio se construyó alrededor de la unidad vehicular y su ciclo comercial. `Vehiculo` es el agregado central; `ColorVariante` describe sus configuraciones, `Cliente` representa al comprador y `Vendedor` al responsable de la operación. `Transaccion` relaciona a los tres y conserva el importe, la fecha y la trazabilidad de la venta.
 
@@ -242,7 +267,7 @@ erDiagram
 
 Este modelo permite aplicar una regla esencial del negocio: cada transacción identifica la unidad, el comprador y el responsable que la autorizó. Las operaciones de checkout y POS actualizan el estado del vehículo dentro del proceso transaccional.
 
-### Estudio de factibilidad técnica y operativa
+### 5. Estudio de factibilidad técnica y operativa: costo-beneficio
 
 | Dimensión | Evaluación | Justificación |
 | :--- | :--- | :--- |
@@ -253,7 +278,7 @@ Este modelo permite aplicar una regla esencial del negocio: cada transacción id
 
 La relación costo-beneficio se justifica porque una sola plataforma cubre exhibición, captación, venta y auditoría. El beneficio esperado es reducir tareas manuales, evitar conflictos de inventario, acelerar la atención y disponer de información consolidada para decisiones comerciales. La primera versión mantiene bajo el costo de implementación y deja preparados los límites técnicos para crecer sin rehacer el dominio.
 
-### Metodología de desarrollo y uso de GitHub
+### 6. Metodología de desarrollo de software y uso de GitHub
 
 Se adoptó un enfoque **incremental y ágil**, entregando el sistema por módulos verificables: catálogo y fichas, checkout, POS, administración, persistencia y despliegue. Cada incremento se validó mediante compilación, pruebas de flujo en navegador y revisión de la matriz de trazabilidad.
 
