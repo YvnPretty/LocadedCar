@@ -3,6 +3,13 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
+  const existingVehicles = await prisma.vehiculo.count()
+
+  if (existingVehicles > 0) {
+    console.log(`Database already contains ${existingVehicles} vehicles; skipping seed.`)
+    return
+  }
+
   await prisma.colorVariante.deleteMany()
   await prisma.transaccion.deleteMany()
   await prisma.vehiculo.deleteMany()
