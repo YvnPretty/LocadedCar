@@ -24,6 +24,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   const navItems = [
     {
@@ -61,7 +62,7 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-[#06070a] text-white flex flex-col font-sans selection:bg-amber-500 selection:text-black">
       {/* TOP EXECUTIVE BAR */}
-      <header className="sticky top-0 z-40 bg-[#090b0f]/95 backdrop-blur-xl border-b border-white/10 px-6 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#090b0f]/95 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link href="/admin" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-black text-xs shadow-lg shadow-cyan-500/20">
@@ -83,7 +84,16 @@ export default function AdminLayout({
         </div>
 
         {/* ROLE QUICK SWITCHER */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            aria-label="Abrir navegación administrativa"
+            aria-expanded={mobileNavOpen}
+            onClick={() => setMobileNavOpen((open) => !open)}
+            className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg border border-white/10 bg-white/5 text-neutral-300"
+          >
+            <SlidersHorizontal size={16} />
+          </button>
           <Link
             href="/pos"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all"
@@ -115,6 +125,33 @@ export default function AdminLayout({
           </div>
         </div>
       </header>
+
+      {mobileNavOpen && (
+        <div className="md:hidden border-b border-white/10 bg-[#08090d] px-4 py-3">
+          <nav className="grid grid-cols-1 sm:grid-cols-2 gap-1.5" aria-label="Navegación administrativa">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium ${
+                    isActive
+                      ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
+                      : "text-neutral-300 hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  <Icon size={16} />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
 
       {/* MAIN WORKSPACE: SIDEBAR + CONTENT */}
       <div className="flex-1 flex overflow-hidden">
@@ -194,7 +231,7 @@ export default function AdminLayout({
         </aside>
 
         {/* CONTENT AREA */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-h-[calc(100vh-57px)]">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto max-h-[calc(100vh-57px)]">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

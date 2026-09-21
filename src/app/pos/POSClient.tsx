@@ -343,10 +343,10 @@ export default function POSClient({
       </header>
 
       {/* 2. MAIN DUAL-PANE COCKPIT */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 overflow-hidden">
         
         {/* === LEFT PANE: SHOWROOM & VEHICLE SELECTOR (7 Cols) === */}
-        <div className="lg:col-span-7 flex flex-col border-r border-white/10 bg-[#080a0d]/60 backdrop-blur-md overflow-hidden">
+        <div className="xl:col-span-7 flex flex-col border-r border-white/10 bg-[#080a0d]/60 backdrop-blur-md overflow-hidden">
           
           {/* Search & Category Filter Controls */}
           <div className="p-4 border-b border-white/10 space-y-3">
@@ -524,7 +524,7 @@ export default function POSClient({
         </div>
 
         {/* === RIGHT PANE: COCKPIT DE DESPACHO & COBRO (5 Cols) === */}
-        <div className="lg:col-span-5 flex flex-col bg-[#0b0e13] overflow-y-auto max-h-[calc(100vh-50px)] p-4 md:p-6 space-y-4">
+        <div className="xl:col-span-5 flex flex-col bg-[#0b0e13] overflow-y-auto max-h-[calc(100vh-50px)] p-4 md:p-6 space-y-4">
           
           {/* Active Unit Header Card */}
           {selectedCar ? (
@@ -604,7 +604,7 @@ export default function POSClient({
                 ))}
               </select>
 
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <input
                   type="text"
                   placeholder="Nombre completo"
@@ -643,7 +643,7 @@ export default function POSClient({
               Modalidad de Venta
             </label>
 
-            <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => setModalidad("contado")}
@@ -703,7 +703,7 @@ export default function POSClient({
               Método de Cobro en Terminal
             </label>
 
-            <div className="grid grid-cols-4 gap-2 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => setMetodoPago("tarjeta")}

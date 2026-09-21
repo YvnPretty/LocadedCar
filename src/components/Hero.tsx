@@ -22,7 +22,7 @@ export default function Hero() {
         />
       </div>
 
-      <div className="relative z-10 text-center px-6 max-w-5xl mx-auto mt-20">
+      <div className="relative z-10 text-center px-6 max-w-6xl mx-auto mt-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -34,53 +34,62 @@ export default function Hero() {
           </span>
         </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-          className="text-5xl md:text-7xl font-light tracking-tight mb-8"
-        >
-          Experimenta la <br className="hidden md:block" />
-          <span className="font-semibold bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/40">
-            Adrenalina Pura.
-          </span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
-          className="text-lg md:text-xl text-white/55 mb-10 font-light max-w-2xl mx-auto"
-        >
-          Descubre una colección exclusiva de vehículos deportivos y semideportivos. Diseño, potencia y estatus al alcance de tus manos.
-        </motion.p>
-
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.6 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          transition={{ duration: 1, ease: "easeOut", delay: 0.1 }}
+          className="mx-auto mb-8 w-full max-w-5xl iphone-shell rounded-[32px] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
         >
-          <Link href="/catalogo" className="glass-button w-full sm:w-auto px-8 py-4 rounded-full text-white font-medium flex items-center justify-center gap-2 group shadow-[0_10px_35px_rgba(255,255,255,0.08)]">
-            Ver Catálogo
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
-          <Link href="/nosotros" className="w-full sm:w-auto px-8 py-4 rounded-full text-white/75 font-medium hover:text-white transition-colors border border-white/10 bg-white/5">
-            Conocer más
-          </Link>
+          <div className="rounded-[26px] border border-white/10 bg-black/25 p-6 md:p-10 backdrop-blur-xl">
+            <motion.h1
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+              className="text-5xl md:text-7xl font-light tracking-tight mb-6"
+            >
+              Experimenta la <br className="hidden md:block" />
+              <span className="font-semibold bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/40">
+                Adrenalina Pura.
+              </span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
+              className="text-lg md:text-xl text-white/55 mb-10 font-light max-w-2xl mx-auto"
+            >
+              Descubre una colección exclusiva de vehículos deportivos y semideportivos. Diseño, potencia y estatus al alcance de tus manos.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: "easeOut", delay: 0.6 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
+              <Link href="/catalogo" className="glass-button w-full sm:w-auto px-8 py-4 rounded-full text-white font-medium flex items-center justify-center gap-2 group">
+                Ver Catálogo
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link href="/nosotros" className="w-full sm:w-auto px-8 py-4 rounded-full text-white/75 font-medium hover:text-white transition-colors border border-white/10 bg-white/5">
+                Conocer más
+              </Link>
+            </motion.div>
+          </div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut", delay: 0.8 }}
-          className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 text-left sm:text-center"
+          className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-left sm:text-center"
         >
-          <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-4 py-3 text-white/70 backdrop-blur-sm">
+          <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-4 py-3 text-white/70 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
             <ShieldCheck size={16} className="text-emerald-400" />
             <span className="text-sm">Inventario verificado</span>
           </div>
-          <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-4 py-3 text-white/70 backdrop-blur-sm">
+          <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-4 py-3 text-white/70 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
             <Gauge size={16} className="text-sky-400" />
             <span className="text-sm">Entrega premium</span>
           </div>
