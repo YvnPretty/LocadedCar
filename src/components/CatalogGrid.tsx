@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useSessionState } from "@/hooks/useSessionState";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
 import type { Vehiculo } from "@prisma/client";
@@ -8,9 +9,12 @@ import CarCard from "@/components/CarCard";
 
 interface CatalogGridProps {
   cars: Vehiculo[];
+  requestedBrand?: string;
+  requestedType?: string;
+  resetFilters?: boolean;
 }
 
-export default function CatalogGrid({ cars }: CatalogGridProps) {
+export default function CatalogGrid({ cars, requestedBrand, requestedType, resetFilters }: CatalogGridProps) {
   const brandOptions = useMemo(
     () => Array.from(new Set(cars.map((car) => car.marca))).sort((a, b) => a.localeCompare(b)),
     [cars],
@@ -24,11 +28,18 @@ export default function CatalogGrid({ cars }: CatalogGridProps) {
     [cars],
   );
 
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useSessionState<string[]>("catalog:brands", []);
+  const [selectedTypes, setSelectedTypes] = useSessionState<string[]>("catalog:types", []);
   const [isBrandOpen, setIsBrandOpen] = useState(true);
   const [isTypeOpen, setIsTypeOpen] = useState(true);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    if (resetFilters || requestedBrand || requestedType) {
+      setSelectedBrands(requestedBrand ? [requestedBrand] : []);
+      setSelectedTypes(requestedType ? [requestedType] : []);
+    }
+  }, [requestedBrand, requestedType, resetFilters, setSelectedBrands, setSelectedTypes]);
 
   const toggleBrand = (brand: string) => {
     setSelectedBrands((prev) => (prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]));

@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import VehicleImage from "@/components/VehicleImage";
+import { vehicleName } from "@/lib/vehicle-media";
+import { useSessionState, clearSessionDraft, useSessionReady } from "@/hooks/useSessionState";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -13,12 +16,7 @@ import {
   ArrowRight, 
   ArrowLeft, 
   Sparkles, 
-  Car, 
   Printer, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Calendar, 
   BadgeCheck 
 } from "lucide-react";
 import type { Vehiculo, ColorVariante } from "@prisma/client";
@@ -34,19 +32,23 @@ export default function CheckoutClient({
   cars: VehiculoConColores[];
   initialCar?: VehiculoConColores;
 }) {
-  const [selectedCar, setSelectedCar] = useState<VehiculoConColores>(initialCar || cars[0]);
-  const [selectedColor, setSelectedColor] = useState<string>(
+  const [selectedCarId, setSelectedCarId] = useSessionState("checkout:vehicle", "");
+  const selectedCar = cars.find(car => car.id === selectedCarId) || (!selectedCarId ? initialCar || cars.find(car => car.estado === "disponible") : undefined);
+  const setSelectedCar = (car: VehiculoConColores) => { setSelectedCarId(car.id); setStep(1); };
+  const requestedApplied = useRef(false);
+  const sessionReady = useSessionReady();
+  const [selectedColor, setSelectedColor] = useSessionState<string>(`vehicle:${selectedCar?.marca}:${selectedCar?.modelo}:color`,
     selectedCar?.colores?.[0]?.nombre || "Original de Fábrica"
   );
   
   // Modalidad: "total" (100%) o "apartado" (10% para apartar el chasis)
-  const [modalidad, setModalidad] = useState<"total" | "apartado">("total");
+  const [modalidad, setModalidad] = useSessionState<"total" | "apartado">("checkout:mode", "total");
 
   // Pasos: 1 = Datos, 2 = Pago, 3 = Revisión
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useSessionState<1 | 2 | 3>("checkout:step", 1);
 
   // Formulario del Comprador
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useSessionState("checkout:buyer", {
     nombre: "",
     correo: "",
     telefono: "",
@@ -58,7 +60,7 @@ export default function CheckoutClient({
   });
 
   // Método de pago: "card" | "spei" | "finance"
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "spei" | "finance">("card");
+  const [paymentMethod, setPaymentMethod] = useSessionState<"card" | "spei" | "finance">("checkout:method", "card");
 
   // Datos de tarjeta
   const [cardData, setCardData] = useState({
@@ -69,12 +71,20 @@ export default function CheckoutClient({
   });
 
   // Plazo financiamiento (meses)
-  const [plazoMeses, setPlazoMeses] = useState<12 | 24 | 36>(24);
+  const [plazoMeses, setPlazoMeses] = useSessionState<12 | 24 | 36>("checkout:months", 24);
 
   // Estados de proceso y éxito
   const [isProcessing, setIsProcessing] = useState(false);
-  const [receiptData, setReceiptData] = useState<any>(null);
+  const [receiptData, setReceiptData] = useState<{ transaccionId: string; fecha: string; vehiculo: { marca: string; modelo: string; anio: number }; cliente: { nombre: string }; modalidad: string; metodoPago: string; montoTotal: number } | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (!sessionReady || requestedApplied.current) return;
+    requestedApplied.current = true;
+    if (initialCar && initialCar.id !== selectedCarId) {
+      setSelectedCarId(initialCar.id); setStep(1);
+    } else if (!selectedCarId && selectedCar) setSelectedCarId(selectedCar.id);
+  }, [sessionReady, initialCar, selectedCarId, selectedCar, setSelectedCarId, setStep, setSelectedColor]);
 
   if (!selectedCar) {
     return (
@@ -90,10 +100,7 @@ export default function CheckoutClient({
   // Cálculos financieros
   const precioBase = selectedCar.precio;
   const montoAPagar = modalidad === "total" ? precioBase : Math.round(precioBase * 0.10);
-  const fleteBlindado = 0; // Cortesía VIP
-  const seguroTraslado = 0; // Incluido
 
-  const cuotaMensual = Math.round((precioBase * 0.90 * 1.12) / plazoMeses);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -110,7 +117,7 @@ export default function CheckoutClient({
   };
 
   // Validaciones
-  const canProceedStep1 = formData.nombre.trim() !== "" && formData.correo.trim() !== "" && formData.telefono.trim() !== "";
+  const canProceedStep1 = formData.nombre.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo.trim()) && formData.telefono.trim() !== "";
   
   const canProceedStep2 = 
     paymentMethod === "spei" || 
@@ -119,6 +126,10 @@ export default function CheckoutClient({
 
   // Enviar pago al backend
   const handleFinalizarPago = async () => {
+    if (isProcessing) return;
+    if (!canProceedStep1) { setStep(1); setErrorMessage("Complete los datos del comprador."); return; }
+    if (!canProceedStep2) { setStep(2); setErrorMessage("Revise el método de pago. Los datos de tarjeta no se guardan al salir."); return; }
+    if (selectedCar.estado !== "disponible") { setErrorMessage("Esta unidad ya no está disponible. Seleccione otra."); return; }
     setIsProcessing(true);
     setErrorMessage("");
 
@@ -150,8 +161,10 @@ export default function CheckoutClient({
       }
 
       setReceiptData(data);
-    } catch (err: any) {
-      setErrorMessage(err.message || "No se pudo completar la transacción. Verifica tus datos.");
+      clearSessionDraft("checkout");
+      setCardData({ numero: "", titular: "", expira: "", cvv: "" });
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "No se pudo completar la transacción. Verifica tus datos.");
     } finally {
       setIsProcessing(false);
     }
@@ -161,6 +174,10 @@ export default function CheckoutClient({
     <main className="min-h-screen pt-28 pb-24 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        {!receiptData && <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
+          <p>Tu avance se conserva en esta pestaña. Paso {step} de 3.</p>
+          <button type="button" className="text-amber-300 underline" onClick={() => { if (window.confirm("¿Descartar esta captura y comenzar de nuevo?")) { clearSessionDraft("checkout"); setStep(1); setSelectedCarId(selectedCar.id); setCardData({ numero: "", titular: "", expira: "", cvv: "" }); } }}>Empezar de nuevo</button>
+        </div>}
         {/* Encabezado y Barra de Pasos */}
         <div className="mb-10">
           <Link href={`/catalogo/${selectedCar.id}`} className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors mb-4">
@@ -178,16 +195,13 @@ export default function CheckoutClient({
             </div>
 
             {/* Stepper Visual */}
-            <div className="flex items-center gap-2 self-start md:self-auto bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md">
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${step >= 1 ? "bg-red-500 text-white" : "bg-white/10 text-white/40"}`}>1</span>
-              <span className="text-xs text-white/60">Datos</span>
-              <span className="text-white/20">➔</span>
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${step >= 2 ? "bg-red-500 text-white" : "bg-white/10 text-white/40"}`}>2</span>
-              <span className="text-xs text-white/60">Pago</span>
-              <span className="text-white/20">➔</span>
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${step === 3 ? "bg-red-500 text-white" : "bg-white/10 text-white/40"}`}>3</span>
-              <span className="text-xs text-white/60">Confirmación</span>
-            </div>
+            <nav aria-label="Pasos de compra" className="flex flex-wrap gap-2 self-start rounded-2xl border border-white/10 bg-white/5 p-2">
+              {([1, 2, 3] as const).map(number => <button key={number} type="button" aria-current={step === number ? "step" : undefined}
+                disabled={isProcessing || !!receiptData || (number > 1 && !canProceedStep1) || (number === 3 && !canProceedStep2)}
+                onClick={() => setStep(number)} className={`rounded-xl px-3 py-2 text-sm disabled:opacity-40 ${step === number ? "bg-amber-400 text-black" : "text-white"}`}>
+                {number}. {['Datos', 'Pago', 'Revisión'][number - 1]}
+              </button>)}
+            </nav>
           </div>
         </div>
 
@@ -550,11 +564,11 @@ export default function CheckoutClient({
                     </p>
 
                     <div className="grid grid-cols-3 gap-3">
-                      {[12, 24, 36].map((meses) => (
+                      {([12, 24, 36] as const).map((meses) => (
                         <button
                           key={meses}
                           type="button"
-                          onClick={() => setPlazoMeses(meses as any)}
+                          onClick={() => setPlazoMeses(meses)}
                           className={`p-3 rounded-xl border text-center transition-all ${
                             plazoMeses === meses
                               ? "bg-red-500/20 border-red-500 text-white"
@@ -715,15 +729,11 @@ export default function CheckoutClient({
 
               {/* Imagen */}
               <div className="relative aspect-video rounded-2xl overflow-hidden mb-4 border border-white/10">
-                <img 
-                  src={selectedCar.imagenUrl || ""} 
-                  alt={selectedCar.modelo} 
-                  className="w-full h-full object-cover"
-                />
+                <VehicleImage car={selectedCar} src={selectedCar.colores?.find(color => color.nombre === selectedColor)?.imagenUrl} className="w-full h-full " showCredit />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                 <div className="absolute bottom-3 left-3">
                   <p className="text-xs text-white/60 font-mono uppercase">{selectedCar.marca}</p>
-                  <p className="text-xl font-bold text-white">{selectedCar.modelo} • {selectedCar.anio}</p>
+                  <p className="text-xl font-bold text-white">{vehicleName(selectedCar)} • {selectedCar.anio}</p>
                 </div>
               </div>
 
@@ -736,7 +746,6 @@ export default function CheckoutClient({
                     const found = cars.find(c => c.id === e.target.value);
                     if (found) {
                       setSelectedCar(found);
-                      setSelectedColor(found.colores?.[0]?.nombre || "Original");
                     }
                   }}
                   className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500"

@@ -1,3 +1,5 @@
+import VehicleImage from "@/components/VehicleImage";
+import { vehicleName } from "@/lib/vehicle-media";
 import React from "react";
 import Link from "next/link";
 import { PrismaClient } from "@prisma/client";
@@ -136,15 +138,11 @@ export default async function AdminVentasPage() {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
                         {t.vehiculo.imagenUrl && (
-                          <img
-                            src={t.vehiculo.imagenUrl}
-                            alt=""
-                            className="w-10 h-7 object-cover rounded-md border border-white/10"
-                          />
+                          <VehicleImage car={t.vehiculo} className="w-10 h-7  rounded-md border border-white/10" />
                         )}
                         <div>
                           <p className="font-bold text-white leading-tight">
-                            {t.vehiculo.marca} {t.vehiculo.modelo}
+                            {t.vehiculo.marca} {vehicleName(t.vehiculo)}
                           </p>
                           <p className="text-[10px] text-neutral-500 font-mono">
                             Año {t.vehiculo.anio} • {t.vehiculo.tipo}

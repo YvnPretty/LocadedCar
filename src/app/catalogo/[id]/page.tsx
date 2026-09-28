@@ -1,3 +1,4 @@
+import { vehicleName } from "@/lib/vehicle-media";
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Gauge, Settings2, CheckCircle2, CreditCard } from "lucide-react";
@@ -42,7 +43,7 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
           {/* Columna Derecha: Detalles */}
           <div className="flex flex-col justify-center">
             <h1 className="text-5xl font-light tracking-tight text-white mb-2">
-              <span className="font-semibold">{car.marca}</span> {car.modelo}
+              {vehicleName(car)}
             </h1>
             
             <p className="text-4xl font-light text-white my-6">

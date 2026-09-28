@@ -1,8 +1,11 @@
 "use client";
 
+import { useSessionState, clearSessionDraft } from "@/hooks/useSessionState";
+import ResumeLink from "@/components/ResumeLink";
+import VehicleImage from "@/components/VehicleImage";
+import { vehicleName } from "@/lib/vehicle-media";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -67,32 +70,32 @@ export default function POSClient({
   // State
   const [cars, setCars] = useState<Vehiculo[]>(initialCars);
   const [clients, setClients] = useState<Cliente[]>(initialClients);
-  const [selectedCar, setSelectedCar] = useState<Vehiculo | null>(
-    initialCars.find((c) => c.estado === "disponible") || null
-  );
-  const [selectedColor, setSelectedColor] = useState<ColorVariante | null>(initialCars.find(c => c.estado === "disponible")?.colores[0] ?? null);
+  const [selectedCarId, setSelectedCarId] = useSessionState<string | null>("pos:vehicle", null);
+  const selectedCar = cars.find(car => car.id === selectedCarId) ?? null;
+  const setSelectedCar = (car: Vehiculo | null) => setSelectedCarId(car?.id ?? null);
+  const [selectedColor, setSelectedColor] = useSessionState<ColorVariante | null>("pos:color", null);
 
   // Search & Filter
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"ALL" | "deportivo" | "semideportivo" | "disponible">("disponible");
+  const [searchQuery, setSearchQuery] = useSessionState("pos:search", "");
+  const [categoryFilter, setCategoryFilter] = useSessionState<"ALL" | "deportivo" | "semideportivo" | "disponible">("pos:filter", "disponible");
 
   // Client Selection / Creation
-  const [selectedClientId, setSelectedClientId] = useState<string>(
+  const [selectedClientId, setSelectedClientId] = useSessionState<string>("pos:client",
     "new"
   );
-  const [clientForm, setClientForm] = useState({
+  const [clientForm, setClientForm] = useSessionState("pos:buyer", {
     nombre: "", correo: "", telefono: "", rfc: "", direccion: ""
   });
   const submitting = useRef(false);
 
   // Transaction Parameters
-  const [modalidad, setModalidad] = useState<"contado" | "apartado_10" | "personalizado">("contado");
-  const [metodoPago, setMetodoPago] = useState<"tarjeta" | "spei" | "efectivo" | "financiamiento">("tarjeta");
-  const [descuentoComercial, setDescuentoComercial] = useState<number>(0);
-  const [montoPersonalizado, setMontoPersonalizado] = useState<string>("");
-  const [efectivoRecibido, setEfectivoRecibido] = useState<string>("");
-  const [plazoMeses, setPlazoMeses] = useState<number>(24);
-  const [notasVenta, setNotasVenta] = useState("");
+  const [modalidad, setModalidad] = useSessionState<"contado" | "apartado_10" | "personalizado">("pos:mode", "contado");
+  const [metodoPago, setMetodoPago] = useSessionState<"tarjeta" | "spei" | "efectivo" | "financiamiento">("pos:method", "tarjeta");
+  const [descuentoComercial, setDescuentoComercial] = useSessionState<number>("pos:discount", 0);
+  const [montoPersonalizado, setMontoPersonalizado] = useSessionState<string>("pos:deposit", "");
+  const [efectivoRecibido, setEfectivoRecibido] = useSessionState<string>("pos:cash", "");
+  const [plazoMeses, setPlazoMeses] = useSessionState<number>("pos:months", 24);
+  const [notasVenta, setNotasVenta] = useSessionState("pos:notes", "");
 
   // UI / Status
   const [loading, setLoading] = useState(false);
@@ -248,7 +251,7 @@ export default function POSClient({
       }
 
       // Update state locally
-      setSelectedCar(prev => prev ? { ...prev, estado: data.data.estadoUnidad } : null);
+      clearSessionDraft("pos");
       setTicketData(data.data);
       setIsTicketOpen(true);
 
@@ -324,16 +327,20 @@ export default function POSClient({
             <span className="hidden sm:inline">Historial</span>
           </button>
 
-          <Link
-            href="/admin/inventario"
+          <ResumeLink
+            href="/admin"
             className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white transition-colors"
-            title="Ir al Inventario Admin"
+            title="Continuar en administración"
           >
             <SlidersHorizontal size={16} />
-          </Link>
+          </ResumeLink>
         </div>
       </header>
 
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-3 text-sm">
+        <p className="text-neutral-300">{selectedCar ? `Venta en preparación · ${vehicleName(selectedCar)}` : "Selecciona un vehículo para iniciar una venta"}</p>
+        <button type="button" disabled={loading} className="text-amber-300 underline" onClick={() => { if (window.confirm("¿Descartar la captura actual?")) clearSessionDraft("pos"); }}>Nueva venta</button>
+      </div>
       {/* 2. MAIN DUAL-PANE COCKPIT */}
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 overflow-hidden">
         
@@ -416,7 +423,7 @@ export default function POSClient({
                   <motion.div
                     key={car.id}
                     layoutId={`car-card-${car.id}`}
-                    role="button" tabIndex={0} aria-label={`Seleccionar ${car.marca} ${car.modelo}`} aria-pressed={isSelected}
+                    role="button" tabIndex={0} aria-label={`Seleccionar ${vehicleName(car)}`} aria-pressed={isSelected}
                     onKeyDown={e => { if (e.target !== e.currentTarget || loading) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedCar(car); setSelectedColor(car.colores[0] ?? null); } }}
                     onClick={() => {
                       if (loading) return;
@@ -447,11 +454,7 @@ export default function POSClient({
 
                     {/* Image Preview */}
                     <div className="relative w-full h-36 rounded-xl overflow-hidden bg-black/40 mb-3 border border-white/5">
-                      <Image unoptimized fill sizes="(min-width: 768px) 40vw, 100vw"
-                        src={car.imagenUrl || "/renders/audi_r8_red.jpg"}
-                        alt={car.modelo}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      <VehicleImage car={car} src={isSelected ? selectedColor?.imagenUrl : undefined} className="w-full h-full  group-hover:scale-105 transition-transform duration-500" showCredit />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                       
                       {/* Brand and Model Overlay */}
@@ -461,7 +464,7 @@ export default function POSClient({
                             {car.marca}
                           </p>
                           <h4 className="text-sm font-bold text-white leading-tight">
-                            {car.modelo} ({car.anio})
+                            {vehicleName(car)} ({car.anio})
                           </h4>
                         </div>
                       </div>
@@ -535,10 +538,10 @@ export default function POSClient({
                       {selectedCar.marca}
                     </span>
                     <span className="text-[10px] font-mono text-neutral-400">
-                      VIN-LOC-{selectedCar.anio}-{selectedCar.id.slice(0, 5).toUpperCase()}
+                      ID de unidad: {selectedCar.id.slice(0, 8).toUpperCase()}
                     </span>
                   </div>
-                  <h2 className="text-xl font-black text-white">{selectedCar.modelo}</h2>
+                  <h2 className="text-xl font-black text-white">{vehicleName(selectedCar)}</h2>
                   <p className="text-xs text-neutral-400 line-clamp-1">{selectedCar.detalles || "Unidad de Alto Rendimiento."}</p>
                 </div>
 

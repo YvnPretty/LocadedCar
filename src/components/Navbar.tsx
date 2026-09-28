@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ResumeLink from "@/components/ResumeLink";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,6 +46,7 @@ export default function Navbar() {
           >
             <button
               type="button"
+              onClick={() => setMenuOpen(open => !open)} aria-expanded={menuOpen}
               className="flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white transition-colors py-2"
             >
               Modelos
@@ -64,20 +66,20 @@ export default function Navbar() {
                     <div>
                       <h4 className="text-[10px] uppercase font-semibold tracking-[0.2em] text-white/40 mb-3">Carrocerías</h4>
                       <div className="flex flex-col gap-2">
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Todos los Modelos</Link>
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Deportivo</Link>
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Semideportivo</Link>
+                        <Link href="/catalogo?todos=1" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Todos los Modelos</Link>
+                        <Link href="/catalogo?tipo=Deportivo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Deportivo</Link>
+                        <Link href="/catalogo?tipo=Semideportivo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Semideportivo</Link>
                       </div>
                     </div>
                     <div>
                       <h4 className="text-[10px] uppercase font-semibold tracking-[0.2em] text-white/40 mb-3">Nuestras Marcas</h4>
                       <div className="flex flex-col gap-2">
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Mercedes-Benz</Link>
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Porsche</Link>
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Lamborghini</Link>
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Bugatti</Link>
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Ferrari</Link>
-                        <Link href="/catalogo" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Pagani</Link>
+                        <Link href="/catalogo?marca=Mercedes-Benz" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Mercedes-Benz</Link>
+                        <Link href="/catalogo?marca=Porsche" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Porsche</Link>
+                        <Link href="/catalogo?marca=Lamborghini" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Lamborghini</Link>
+                        <Link href="/catalogo?marca=Bugatti" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Bugatti</Link>
+                        <Link href="/catalogo?marca=Ferrari" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Ferrari</Link>
+                        <Link href="/catalogo?marca=Pagani" className="text-sm text-white/70 hover:text-white hover:translate-x-1 transition-all">Pagani</Link>
                       </div>
                     </div>
                   </div>
@@ -86,11 +88,12 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
 
+          <ResumeLink href="/catalogo" className="text-sm text-white/70 hover:text-white">Catálogo</ResumeLink>
           <Link href="/nosotros" className="text-sm font-medium text-white/70 hover:text-white transition-colors">Nosotros</Link>
           <Link href="/contacto" className="text-sm font-medium text-white/70 hover:text-white transition-colors">Contacto</Link>
           <Link href="/checkout" className="text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            Comprar / Pago
+            Continuar compra
           </Link>
         </div>
 
@@ -118,10 +121,10 @@ export default function Navbar() {
             className="md:hidden overflow-hidden border-t border-white/10 bg-[#050505]/95 backdrop-blur-xl"
           >
             <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-3">
-              <Link href="/catalogo" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white">Catálogo</Link>
+              <ResumeLink href="/catalogo" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white">Catálogo</ResumeLink>
               <Link href="/nosotros" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white">Nosotros</Link>
               <Link href="/contacto" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white">Contacto</Link>
-              <Link href="/checkout" onClick={() => setMobileOpen(false)} className="text-amber-400 hover:text-amber-300">Comprar / Pago</Link>
+              <Link href="/checkout" onClick={() => setMobileOpen(false)} className="text-amber-400 hover:text-amber-300">Continuar compra</Link>
             </div>
           </motion.div>
         )}

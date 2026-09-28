@@ -1,3 +1,4 @@
+import { resolveVehicleImage } from "@/lib/vehicle-media";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { calculatePayment, money, POSValidationError, validateRequest } from "@/lib/pos/payment";
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
           anio: vehiculo.anio,
           precioOriginal: vehiculo.precio,
           tipo: vehiculo.tipo,
-          imagenUrl: colorSeleccionado?.imagenUrl || vehiculo.imagenUrl,
+          imagenUrl: resolveVehicleImage(vehiculo, colorSeleccionado?.imagenUrl),
           color: colorSeleccionado ? { nombre: colorSeleccionado.nombre, hex: colorSeleccionado.hex } : null,
           vinVirtual: `VIN-LOCADED-${vehiculo.anio}-${vehiculo.id.slice(0, 8).toUpperCase()}`
         },

@@ -1,3 +1,4 @@
+import { resolveVehicleImage } from "@/lib/vehicle-media";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
@@ -91,7 +92,7 @@ export async function POST(request: Request) {
         modelo: vehiculo.modelo,
         anio: vehiculo.anio,
         precio: vehiculo.precio,
-        imagenUrl: vehiculo.imagenUrl
+        imagenUrl: resolveVehicleImage(vehiculo)
       },
       cliente: {
         id: cliente.id,

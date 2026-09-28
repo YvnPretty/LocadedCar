@@ -41,7 +41,7 @@ export async function POST(request: Request) {
           precio: Number(precio),
           tipo: tipo || "deportivo",
           estado: estado || "disponible",
-          imagenUrl: imagenUrl || "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?q=80&w=2000&auto=format&fit=crop",
+          imagenUrl: imagenUrl || null,
           detalles: detalles || "Unidad de Alto Rendimiento."
         }
       });

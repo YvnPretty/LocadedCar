@@ -1,3 +1,5 @@
+import VehicleImage from "@/components/VehicleImage";
+import { vehicleName } from "@/lib/vehicle-media";
 import React from "react";
 import Link from "next/link";
 import { PrismaClient } from "@prisma/client";
@@ -250,14 +252,10 @@ export default async function AdminDashboardPage() {
               key={car.id}
               className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center gap-4 hover:border-white/20 transition-all"
             >
-              <img
-                src={car.imagenUrl || "/renders/audi_r8_red.jpg"}
-                alt={car.modelo}
-                className="w-20 h-16 object-cover rounded-xl border border-white/10"
-              />
+              <VehicleImage car={car} className="w-20 h-16  rounded-xl border border-white/10" />
               <div className="space-y-0.5 flex-1 min-w-0">
                 <span className="text-[10px] font-mono uppercase text-amber-400">{car.marca}</span>
-                <h4 className="text-sm font-bold text-white truncate">{car.modelo}</h4>
+                <h4 className="text-sm font-bold text-white truncate">{vehicleName(car)}</h4>
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-xs font-mono font-black text-neutral-300">
                     {formatMXN(car.precio)}

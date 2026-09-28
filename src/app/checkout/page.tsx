@@ -16,10 +16,7 @@ export default async function CheckoutPage({
     orderBy: { createdAt: "desc" }
   });
 
-  const selectedCar = 
-    cars.find(c => c.id === vehiculoId) || 
-    cars.find(c => c.estado === "disponible") || 
-    cars[0];
+  const selectedCar = cars.find(c => c.id === vehiculoId);
 
-  return <CheckoutClient cars={cars} initialCar={selectedCar} />;
+  return <CheckoutClient key={vehiculoId || "resume"} cars={cars} initialCar={selectedCar} />;
 }

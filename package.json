@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "test": "node --import tsx --test src/lib/*.test.ts src/lib/pos/*.test.ts tests/*.test.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "jsdom": "^30.1.1",
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",

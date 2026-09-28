@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import ResumeLink from "@/components/ResumeLink";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -103,14 +104,14 @@ export default function AdminLayout({
             <span className="hidden sm:inline">Abrir Terminal POS</span>
           </Link>
 
-          <Link
-            href="/"
+          <ResumeLink
+            href="/catalogo"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 text-xs font-medium transition-all"
             title="Ver catálogo público como cliente"
           >
             <ExternalLink size={14} />
             <span className="hidden sm:inline">Vista de Cliente</span>
-          </Link>
+          </ResumeLink>
 
           <div className="h-4 w-[1px] bg-white/10 hidden sm:block"></div>
 

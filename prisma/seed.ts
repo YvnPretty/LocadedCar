@@ -1,8 +1,10 @@
+import { repairVehicleImages } from './repair-vehicle-images'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 async function main() {
+  await repairVehicleImages(prisma)
   const existingVehicles = await prisma.vehiculo.count()
 
   if (existingVehicles > 0) {
@@ -126,6 +128,7 @@ async function main() {
     }
   })
 
+  await repairVehicleImages(prisma)
   console.log('Seeded database with cars and color variants!')
 }
 

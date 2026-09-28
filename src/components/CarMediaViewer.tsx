@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, MouseEvent } from "react";
+import VehicleImage from "@/components/VehicleImage";
+import { useSessionState } from "@/hooks/useSessionState";
+import { MouseEvent } from "react";
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 
 interface DBColor {
@@ -19,7 +21,8 @@ interface CarMediaViewerProps {
 
 export default function CarMediaViewer({ imageUrl, brand, model, status, dbColors = [] }: CarMediaViewerProps) {
   // Si hay colores en DB, usamos el primero como default. Si no, usamos null.
-  const [selectedDBColor, setSelectedDBColor] = useState<DBColor | null>(dbColors.length > 0 ? dbColors[0] : null);
+  const [selectedColorName, setSelectedColorName] = useSessionState(`vehicle:${brand}:${model}:color`, dbColors[0]?.nombre || "");
+  const selectedDBColor = dbColors.find(color => color.nombre === selectedColorName) ?? dbColors[0] ?? null;
 
   // Framer motion Parallax / Tilt effect variables
   const x = useMotionValue(0);
@@ -65,16 +68,9 @@ export default function CarMediaViewer({ imageUrl, brand, model, status, dbColor
         >
           {/* AnimatePresence for smooth crossfades between images */}
           <AnimatePresence mode="wait">
-            <motion.img 
-              key={currentImage} // Cambiar la key fuerza el remount y la animación
-              src={currentImage} 
-              alt={`${brand} ${model}`} 
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1.1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            />
+            <motion.div key={currentImage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0">
+              <VehicleImage car={{ marca: brand, modelo: model, imagenUrl: imageUrl }} src={currentImage} className="h-full w-full" showCredit />
+            </motion.div>
           </AnimatePresence>
 
           {/* Brillo dinámico superpuesto para más realismo */}
@@ -101,7 +97,7 @@ export default function CarMediaViewer({ imageUrl, brand, model, status, dbColor
             {dbColors.map((color) => (
               <button
                 key={color.nombre}
-                onClick={() => setSelectedDBColor(color)}
+                onClick={() => setSelectedColorName(color.nombre)}
                 className={`w-10 h-10 rounded-full border-2 transition-all duration-300 ease-out ${
                   selectedDBColor?.nombre === color.nombre 
                     ? 'border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.4)]' 

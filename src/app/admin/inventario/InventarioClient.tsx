@@ -1,5 +1,8 @@
 "use client";
 
+import { useSessionState } from "@/hooks/useSessionState";
+import VehicleImage from "@/components/VehicleImage";
+import { vehicleName } from "@/lib/vehicle-media";
 import React, { useState } from "react";
 import Link from "next/link";
 import {
@@ -40,13 +43,13 @@ interface Vehiculo {
 
 export default function InventarioClient({ initialCars }: { initialCars: Vehiculo[] }) {
   const [cars, setCars] = useState<Vehiculo[]>(initialCars);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [search, setSearch] = useSessionState("inventory:search", "");
+  const [statusFilter, setStatusFilter] = useSessionState("inventory:status", "ALL");
+  const [showAddModal, setShowAddModal] = useSessionState("inventory:adding", false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   // New Car Form State
-  const [newCar, setNewCar] = useState({
+  const [newCar, setNewCar] = useSessionState("inventory:new", {
     marca: "",
     modelo: "",
     anio: 2024,
@@ -231,17 +234,13 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
                   <tr key={car.id} className="hover:bg-white/5 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={car.imagenUrl || "/renders/audi_r8_red.jpg"}
-                          alt={car.modelo}
-                          className="w-14 h-10 object-cover rounded-lg border border-white/10"
-                        />
+                        <VehicleImage car={car} className="w-14 h-10  rounded-lg border border-white/10" />
                         <div>
                           <span className="text-[10px] font-mono text-amber-400 uppercase font-bold">
                             {car.marca}
                           </span>
                           <h4 className="font-bold text-white leading-tight">
-                            {car.modelo} ({car.anio})
+                            {vehicleName(car)} ({car.anio})
                           </h4>
                           <span className="text-[10px] text-neutral-500 line-clamp-1">
                             {car.detalles}

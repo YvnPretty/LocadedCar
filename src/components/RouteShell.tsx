@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import WorkflowNavigation from "@/components/WorkflowNavigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -9,12 +10,13 @@ export default function RouteShell({ children }: { children: React.ReactNode }) 
   const isStaffArea = pathname.startsWith("/admin") || pathname.startsWith("/pos");
 
   if (isStaffArea) {
-    return children;
+    return <><WorkflowNavigation />{children}</>;
   }
 
   return (
     <>
       <Navbar />
+      <WorkflowNavigation />
       <main className="flex-1">{children}</main>
       <Footer />
     </>

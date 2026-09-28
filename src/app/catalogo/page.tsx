@@ -5,7 +5,8 @@ export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
-export default async function Catalogo() {
+export default async function Catalogo({ searchParams }: { searchParams: Promise<{ marca?: string; tipo?: string; todos?: string }> }) {
+  const filters = await searchParams;
   const cars = await prisma.vehiculo.findMany({
     orderBy: { createdAt: 'desc' }
   });
@@ -22,7 +23,7 @@ export default async function Catalogo() {
           </p>
         </div>
 
-        <CatalogGrid cars={cars} />
+        <CatalogGrid key={`${filters.marca || ""}-${filters.tipo || ""}-${filters.todos || ""}`} cars={cars} requestedBrand={filters.marca} requestedType={filters.tipo} resetFilters={filters.todos === "1"} />
       </section>
     </main>
   );
