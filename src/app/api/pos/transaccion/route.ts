@@ -1,43 +1,13 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+import { calculatePayment, money, POSValidationError, validateRequest } from "@/lib/pos/payment";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const {
-      vehiculoId,
-      colorVarianteId,
-      cliente,
-      modalidad = "contado",
-      metodoPago = "tarjeta",
-      montoTotal,
-      montoRecibido,
-      cambio,
-      descuento = 0,
-      plazoMeses,
-      notasVenta,
-      vendedorNombre = "Asesor Concierge POS"
-    } = body;
-
-    if (!vehiculoId) {
-      return NextResponse.json(
-        { error: "Debe seleccionar un vehículo para procesar la transacción." },
-        { status: 400 }
-      );
-    }
-
-    if (!cliente || !cliente.nombre) {
-      return NextResponse.json(
-        { error: "Los datos del comprador (nombre) son obligatorios." },
-        { status: 400 }
-      );
-    }
-
-    const clienteCorreo = cliente.correo?.trim() 
-      ? cliente.correo.trim() 
-      : `vip.${Date.now()}@locadedcar-pos.com`;
+    let body: unknown;
+    try { body = await request.json(); } catch { throw new POSValidationError("JSON inválido."); }
+    const { vehiculoId, colorVarianteId, cliente, modalidad, metodoPago, montoTotal, montoRecibido, descuento, plazoMeses, notasVenta, vendedorNombre } = validateRequest(body);
+    const clienteCorreo = cliente.correo;
 
     // Ejecución Atómica con Prisma $transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -48,12 +18,16 @@ export async function POST(request: Request) {
       });
 
       if (!vehiculo) {
-        throw new Error("El vehículo no existe en el catálogo.");
+        throw new POSValidationError("El vehículo no existe en el catálogo.");
       }
 
+      const payment = calculatePayment(vehiculo.precio, modalidad, descuento, montoTotal);
+      if (money(montoTotal) !== payment.total) throw new POSValidationError("El precio cambió. Actualice el catálogo antes de cobrar.");
+      if (colorVarianteId && !vehiculo.colores.some(c => c.id === colorVarianteId)) throw new POSValidationError("El color no pertenece al vehículo.");
+      if (metodoPago === "efectivo" && montoRecibido < payment.total) throw new POSValidationError("El efectivo recibido es insuficiente.");
       const reservado = await tx.vehiculo.updateMany({
         where: { id: vehiculo.id, estado: "disponible" },
-        data: { estado: modalidad === "apartado_10" ? "apartado" : "vendido" }
+        data: { estado: payment.state }
       });
 
       if (reservado.count !== 1) {
@@ -86,8 +60,6 @@ export async function POST(request: Request) {
           nombre: cliente.nombre,
           telefono: cliente.telefono || undefined,
           direccion: cliente.direccion,
-          ciudad: cliente.ciudad,
-          estado: cliente.estado,
           rfc: cliente.rfc
         },
         create: {
@@ -95,15 +67,13 @@ export async function POST(request: Request) {
           correo: clienteCorreo,
           telefono: cliente.telefono || undefined,
           direccion: cliente.direccion,
-          ciudad: cliente.ciudad,
-          estado: cliente.estado,
           rfc: cliente.rfc
         }
       });
 
       // 4. Determinar monto a registrar y estado de la unidad
-      const precioFinal = Number(montoTotal) || vehiculo.precio;
-      const nuevoEstado = modalidad === "apartado_10" ? "apartado" : "vendido";
+      const precioFinal = payment.total;
+      const nuevoEstado = payment.state;
 
       // 5. Crear Transacción oficial
       const transaccion = await tx.transaccion.create({
@@ -126,7 +96,7 @@ export async function POST(request: Request) {
         colorSeleccionado = vehiculo.colores.find((c) => c.id === colorVarianteId) || null;
       }
 
-      const folio = `LCD-POS-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+      const folio = `LCD-POS-${transaccion.id}`;
 
       return {
         transaccionId: transaccion.id,
@@ -135,8 +105,8 @@ export async function POST(request: Request) {
         modalidad,
         metodoPago,
         montoTotal: precioFinal,
-        montoRecibido: Number(montoRecibido) || precioFinal,
-        cambio: Number(cambio) || 0,
+        montoRecibido: metodoPago === "efectivo" ? money(montoRecibido) : precioFinal,
+        cambio: metodoPago === "efectivo" ? money(montoRecibido - precioFinal) : 0,
         descuento: Number(descuento) || 0,
         plazoMeses: plazoMeses || null,
         notasVenta: notasVenta || null,
@@ -171,11 +141,12 @@ export async function POST(request: Request) {
       success: true,
       data: result
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error al procesar venta POS:", error);
-    const status = error.message?.includes("ya no está disponible") ? 409 : 500;
+    const message = error instanceof Error ? error.message : "";
+    const status = error instanceof POSValidationError ? 422 : message.includes("ya no está disponible") ? 409 : 500;
     return NextResponse.json(
-      { error: error.message || "Error interno al procesar la venta en POS." },
+      { error: status === 500 ? "Error interno al procesar la venta en POS." : message },
       { status }
     );
   }

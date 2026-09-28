@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+
 
 export async function GET() {
   try {
@@ -15,7 +15,7 @@ export async function GET() {
     });
 
     const totalRecaudado = transacciones.reduce((acc, curr) => acc + curr.montoTotal, 0);
-    const unidadesVendidas = transacciones.length;
+    const unidadesVendidas = await prisma.vehiculo.count({ where: { estado: "vendido" } });
 
     const vehiculosDisponibles = await prisma.vehiculo.count({
       where: { estado: "disponible" }
@@ -36,7 +36,7 @@ export async function GET() {
       },
       recientes: transacciones.slice(0, 10)
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error al obtener estadísticas POS:", error);
     return NextResponse.json(
       { error: "Error al consultar telemetría de ventas." },

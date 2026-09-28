@@ -1,33 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
-  Car,
   CreditCard,
   Banknote,
   Send,
   Calendar,
-  Check,
   User,
   Plus,
-  ArrowRight,
-  Sparkles,
   ShieldCheck,
-  RotateCcw,
   Clock,
   TrendingUp,
-  Receipt,
   ChevronRight,
   SlidersHorizontal,
   X,
-  Building2,
-  DollarSign,
-  Fuel,
-  Gauge
 } from "lucide-react";
+import SalesSummary from "./SalesSummary";
+import { calculatePayment } from "@/lib/pos/payment";
+import "./pos.css";
 import POSTicketModal, { POSTicketData } from "@/components/POSTicketModal";
 
 interface ColorVariante {
@@ -55,6 +49,8 @@ interface Cliente {
   nombre: string;
   correo: string;
   telefono: string | null;
+  rfc?: string | null;
+  direccion?: string | null;
 }
 
 interface POSClientProps {
@@ -72,9 +68,9 @@ export default function POSClient({
   const [cars, setCars] = useState<Vehiculo[]>(initialCars);
   const [clients, setClients] = useState<Cliente[]>(initialClients);
   const [selectedCar, setSelectedCar] = useState<Vehiculo | null>(
-    initialCars.find((c) => c.estado === "disponible") || initialCars[0] || null
+    initialCars.find((c) => c.estado === "disponible") || null
   );
-  const [selectedColor, setSelectedColor] = useState<ColorVariante | null>(null);
+  const [selectedColor, setSelectedColor] = useState<ColorVariante | null>(initialCars.find(c => c.estado === "disponible")?.colores[0] ?? null);
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,16 +78,12 @@ export default function POSClient({
 
   // Client Selection / Creation
   const [selectedClientId, setSelectedClientId] = useState<string>(
-    initialClients[0]?.id || "new"
+    "new"
   );
   const [clientForm, setClientForm] = useState({
-    nombre: "Gabriel Domínguez Amacende",
-    correo: "gabriel.dominguez@itma2.edu.mx",
-    telefono: "55 8921 4400",
-    rfc: "DOAG880914-VIP",
-    direccion: "Av. Paseo de la Reforma 222, CDMX"
+    nombre: "", correo: "", telefono: "", rfc: "", direccion: ""
   });
-  const [showNewClientModal, setShowNewClientModal] = useState(false);
+  const submitting = useRef(false);
 
   // Transaction Parameters
   const [modalidad, setModalidad] = useState<"contado" | "apartado_10" | "personalizado">("contado");
@@ -115,22 +107,13 @@ export default function POSClient({
     const updateTime = () => {
       const now = new Date();
       setTime(
-        now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+        now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "America/Mexico_City" })
       );
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  // Update selected color variant when car changes
-  useEffect(() => {
-    if (selectedCar && selectedCar.colores && selectedCar.colores.length > 0) {
-      setSelectedColor(selectedCar.colores[0]);
-    } else {
-      setSelectedColor(null);
-    }
-  }, [selectedCar]);
 
   // Currency Formatter
   const formatMXN = (val: number) =>
@@ -159,9 +142,9 @@ export default function POSClient({
 
   const totalACobrar = useMemo(() => {
     if (modalidad === "apartado_10") {
-      return precioConDescuento * 0.10; // 10% de apartado
+      return Math.round(precioConDescuento * 10) / 100; // 10% de apartado
     }
-    if (modalidad === "personalizado" && Number(montoPersonalizado) > 0) {
+    if (modalidad === "personalizado") {
       return Number(montoPersonalizado);
     }
     return precioConDescuento;
@@ -183,7 +166,7 @@ export default function POSClient({
         rfc: "",
         direccion: ""
       });
-      setShowNewClientModal(true);
+
     } else {
       const found = clients.find((c) => c.id === cId);
       if (found) {
@@ -191,8 +174,8 @@ export default function POSClient({
           nombre: found.nombre,
           correo: found.correo,
           telefono: found.telefono || "",
-          rfc: "XAXX010101000",
-          direccion: "Dirección Registrada en Concesionaria"
+          rfc: found.rfc || "",
+          direccion: found.direccion || ""
         });
       }
     }
@@ -200,12 +183,13 @@ export default function POSClient({
 
   // Submit Sale / Process POS
   const handleProcessSale = async () => {
+    if (submitting.current) return;
     if (!selectedCar) {
       setErrorMsg("Seleccione un vehículo del catálogo.");
       return;
     }
 
-    if (selectedCar.estado === "vendido") {
+    if (selectedCar.estado !== "disponible") {
       setErrorMsg("El vehículo seleccionado ya se encuentra vendido.");
       return;
     }
@@ -220,7 +204,13 @@ export default function POSClient({
       return;
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientForm.correo.trim())) {
+      setErrorMsg("Ingrese un correo electrónico válido."); return;
+    }
+    try { calculatePayment(selectedCar.precio, modalidad, descuentoComercial, Number(montoPersonalizado)); }
+    catch (error) { setErrorMsg(error instanceof Error ? error.message : "Revise los importes."); return; }
     setErrorMsg(null);
+    submitting.current = true;
     setLoading(true);
 
     try {
@@ -258,6 +248,7 @@ export default function POSClient({
       }
 
       // Update state locally
+      setSelectedCar(prev => prev ? { ...prev, estado: data.data.estadoUnidad } : null);
       setTicketData(data.data);
       setIsTicketOpen(true);
 
@@ -274,15 +265,16 @@ export default function POSClient({
       if (!clients.some((c) => c.correo === data.data.cliente.correo)) {
         setClients((prev) => [data.data.cliente, ...prev]);
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Error al procesar la venta.");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Error al procesar la venta.");
     } finally {
+      submitting.current = false;
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#060709] text-white flex flex-col font-sans selection:bg-amber-500 selection:text-black">
+    <div className="pos-screen min-h-screen bg-[#060709] text-white flex flex-col font-sans selection:bg-amber-500 selection:text-black">
       {/* 1. TOP HUD TELEMETRY BAR */}
       <header className="sticky top-0 z-40 bg-[#0b0d11]/90 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -301,7 +293,7 @@ export default function POSClient({
               ESTACIÓN ACTIVA: POS-01
             </span>
             <span className="text-neutral-500">•</span>
-            <span className="text-neutral-400">ENCRIPTACIÓN SHA-256</span>
+            <span className="text-neutral-400">REGISTRO DE OPERACIONES</span>
           </div>
         </div>
 
@@ -329,7 +321,7 @@ export default function POSClient({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-medium transition-all"
           >
             <TrendingUp size={14} />
-            <span className="hidden sm:inline">Corte / Turno</span>
+            <span className="hidden sm:inline">Historial</span>
           </button>
 
           <Link
@@ -357,13 +349,13 @@ export default function POSClient({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Buscar por marca, modelo, año (ej. Porsche, R8, 2024)..."
+                  aria-label="Buscar por marca, modelo, año (ej. Porsche, R8, 2024)..." placeholder="Buscar por marca, modelo, año (ej. Porsche, R8, 2024)..."
                   className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/15 rounded-xl text-xs text-white placeholder-neutral-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-all"
                 />
               </div>
 
               <span className="text-xs font-mono text-neutral-400 bg-white/5 px-2.5 py-2 rounded-xl border border-white/10">
-                {filteredCars.length} Disp.
+                {filteredCars.length} resultados
               </span>
             </div>
 
@@ -413,7 +405,8 @@ export default function POSClient({
           </div>
 
           {/* Cars Grid */}
-          <div className="flex-1 p-4 overflow-y-auto max-h-[calc(100vh-140px)] space-y-3">
+          <div className="flex-1 p-4 overflow-y-auto max-h-[55dvh] xl:max-h-[calc(100dvh-140px)] space-y-3">
+            {filteredCars.length === 0 && <p role="status" className="p-8 text-center text-neutral-400">No hay vehículos que coincidan. Pruebe otra búsqueda o filtro.</p>}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {filteredCars.map((car) => {
                 const isSelected = selectedCar?.id === car.id;
@@ -423,8 +416,12 @@ export default function POSClient({
                   <motion.div
                     key={car.id}
                     layoutId={`car-card-${car.id}`}
+                    role="button" tabIndex={0} aria-label={`Seleccionar ${car.marca} ${car.modelo}`} aria-pressed={isSelected}
+                    onKeyDown={e => { if (e.target !== e.currentTarget || loading) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedCar(car); setSelectedColor(car.colores[0] ?? null); } }}
                     onClick={() => {
+                      if (loading) return;
                       setSelectedCar(car);
+                      setSelectedColor(car.colores[0] ?? null);
                     }}
                     className={`group relative p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
@@ -450,7 +447,7 @@ export default function POSClient({
 
                     {/* Image Preview */}
                     <div className="relative w-full h-36 rounded-xl overflow-hidden bg-black/40 mb-3 border border-white/5">
-                      <img
+                      <Image unoptimized fill sizes="(min-width: 768px) 40vw, 100vw"
                         src={car.imagenUrl || "/renders/audi_r8_red.jpg"}
                         alt={car.modelo}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -480,10 +477,12 @@ export default function POSClient({
                               key={c.id}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedCar(car);
+                                if (loading) return;
+                      setSelectedCar(car);
                                 setSelectedColor(c);
                               }}
-                              className={`w-3.5 h-3.5 rounded-full border transition-all ${
+                              aria-label={`Color ${c.nombre}`} aria-pressed={isSelected && selectedColor?.id === c.id}
+                              className={`w-10 h-10 rounded-full border transition-all ${
                                 isSelected && selectedColor?.id === c.id
                                   ? "border-amber-400 scale-125 ring-2 ring-amber-400/30"
                                   : "border-white/30 hover:scale-110"
@@ -524,7 +523,7 @@ export default function POSClient({
         </div>
 
         {/* === RIGHT PANE: COCKPIT DE DESPACHO & COBRO (5 Cols) === */}
-        <div className="xl:col-span-5 flex flex-col bg-[#0b0e13] overflow-y-auto max-h-[calc(100vh-50px)] p-4 md:p-6 space-y-4">
+        <div className="xl:col-span-5 flex flex-col bg-[#0b0e13] overflow-y-auto xl:max-h-[calc(100dvh-50px)] p-4 md:p-6 space-y-4">
           
           {/* Active Unit Header Card */}
           {selectedCar ? (
@@ -590,12 +589,13 @@ export default function POSClient({
 
             <div className="space-y-2">
               <select
+                aria-label="Seleccionar comprador"
                 value={selectedClientId}
                 onChange={(e) => handleSelectClient(e.target.value)}
                 className="w-full px-3 py-2 bg-white/5 border border-white/15 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
               >
-                <option value="custom" className="bg-neutral-900 text-white">
-                  👤 Comprador en Mostrador (Personalizado)
+                <option value="new" className="bg-neutral-900 text-white">
+                  👤 Nuevo comprador
                 </option>
                 {clients.map((c) => (
                   <option key={c.id} value={c.id} className="bg-neutral-900 text-white">
@@ -607,28 +607,28 @@ export default function POSClient({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <input
                   type="text"
-                  placeholder="Nombre completo"
+                  aria-label="Nombre completo" placeholder="Nombre completo"
                   value={clientForm.nombre}
                   onChange={(e) => setClientForm({ ...clientForm, nombre: e.target.value })}
                   className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 outline-none focus:border-cyan-400"
                 />
                 <input
                   type="text"
-                  placeholder="RFC / Tax ID"
+                  aria-label="RFC / Tax ID" placeholder="RFC / Tax ID"
                   value={clientForm.rfc}
                   onChange={(e) => setClientForm({ ...clientForm, rfc: e.target.value })}
                   className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 outline-none focus:border-cyan-400"
                 />
                 <input
                   type="email"
-                  placeholder="Correo electrónico"
+                  aria-label="Correo electrónico" placeholder="Correo electrónico"
                   value={clientForm.correo}
                   onChange={(e) => setClientForm({ ...clientForm, correo: e.target.value })}
                   className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 outline-none focus:border-cyan-400"
                 />
                 <input
                   type="text"
-                  placeholder="Teléfono"
+                  aria-label="Teléfono" placeholder="Teléfono"
                   value={clientForm.telefono}
                   onChange={(e) => setClientForm({ ...clientForm, telefono: e.target.value })}
                   className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 outline-none focus:border-cyan-400"
@@ -688,7 +688,7 @@ export default function POSClient({
               <div className="pt-2">
                 <input
                   type="number"
-                  placeholder="Ingrese el monto del anticipo (MXN)"
+                  aria-label="Ingrese el monto del anticipo (MXN)" placeholder="Ingrese el monto del anticipo (MXN)"
                   value={montoPersonalizado}
                   onChange={(e) => setMontoPersonalizado(e.target.value)}
                   className="w-full px-3 py-2 bg-white/5 border border-white/15 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
@@ -770,7 +770,7 @@ export default function POSClient({
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="0.00"
+                      aria-label="0.00" placeholder="0.00"
                       value={efectivoRecibido}
                       onChange={(e) => setEfectivoRecibido(e.target.value)}
                       className="flex-1 px-3 py-2 bg-black/50 border border-emerald-500/40 rounded-lg text-white font-mono outline-none focus:border-emerald-400"
@@ -864,27 +864,27 @@ export default function POSClient({
             </div>
 
             {errorMsg && (
-              <div className="p-2.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-medium">
+              <div role="alert" className="p-2.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-medium">
                 ⚠️ {errorMsg}
               </div>
             )}
 
             <button
               onClick={handleProcessSale}
-              disabled={loading || !selectedCar || selectedCar.estado === "vendido"}
+              disabled={loading || !selectedCar || selectedCar.estado !== "disponible"}
               className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-black shadow-lg shadow-amber-500/25 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
                   <span className="w-4 h-4 rounded-full border-2 border-black border-t-transparent animate-spin"></span>
-                  Autorizando Transacción Atómica...
+                  Registrando operación…
                 </>
-              ) : selectedCar?.estado === "vendido" ? (
+              ) : selectedCar && selectedCar.estado !== "disponible" ? (
                 "Unidad Vendida / No Disponible"
               ) : (
                 <>
                   <ShieldCheck size={18} />
-                  Procesar Despacho y Emitir Ticket POS
+                  Registrar venta y emitir recibo
                 </>
               )}
             </button>
@@ -895,7 +895,11 @@ export default function POSClient({
       {/* 3. MODAL DE TICKET FISCAL Y RECIBO IMPRIMIBLE */}
       <POSTicketModal
         isOpen={isTicketOpen}
-        onClose={() => setIsTicketOpen(false)}
+        onClose={() => {
+          setIsTicketOpen(false); setSelectedCar(null); setSelectedColor(null);
+          setSelectedClientId("new"); setClientForm({ nombre: "", correo: "", telefono: "", rfc: "", direccion: "" });
+          setEfectivoRecibido(""); setMontoPersonalizado(""); setDescuentoComercial(0); setNotasVenta(""); setModalidad("contado");
+        }}
         ticket={ticketData}
       />
 
@@ -912,13 +916,13 @@ export default function POSClient({
               initial={{ x: 400 }}
               animate={{ x: 0 }}
               exit={{ x: 400 }}
-              className="w-full max-w-md bg-[#0a0c10] border-l border-white/15 h-full p-6 flex flex-col justify-between shadow-2xl"
+              className="w-full max-w-md bg-[#0a0c10] border-l border-white/15 h-full overflow-y-auto p-6 flex flex-col justify-between shadow-2xl"
             >
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-white/10">
                   <div className="flex items-center gap-2">
                     <TrendingUp size={18} className="text-cyan-400" />
-                    <h3 className="font-bold text-white text-base">Corte de Caja // Turno Actual</h3>
+                    <h3 className="font-bold text-white text-base">Historial de operaciones</h3>
                   </div>
                   <button
                     onClick={() => setShowShiftDrawer(false)}
@@ -928,68 +932,10 @@ export default function POSClient({
                   </button>
                 </div>
 
-                <div className="mt-6 space-y-4">
-                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                    <span className="text-[10px] uppercase font-mono text-neutral-400">Total Recaudado en Mostrador</span>
-                    <p className="text-2xl font-black text-emerald-400 font-mono">
-                      {formatMXN(
-                        cars
-                          .filter((c) => c.estado === "vendido")
-                          .reduce((acc, c) => acc + c.precio, 0)
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                      <span className="text-neutral-400 block text-[10px]">Unidades Vendidas</span>
-                      <span className="text-lg font-bold text-white">
-                        {cars.filter((c) => c.estado === "vendido").length} autos
-                      </span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                      <span className="text-neutral-400 block text-[10px]">Stock Disponible</span>
-                      <span className="text-lg font-bold text-emerald-400">
-                        {cars.filter((c) => c.estado === "disponible").length} autos
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4">
-                    <h4 className="text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">
-                      Últimos Despachos Registrados
-                    </h4>
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {cars
-                        .filter((c) => c.estado === "vendido")
-                        .slice(0, 5)
-                        .map((car) => (
-                          <div
-                            key={car.id}
-                            className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs"
-                          >
-                            <div>
-                              <p className="font-bold text-white">{car.marca} {car.modelo}</p>
-                              <p className="text-[10px] text-neutral-400 font-mono">{car.anio} • Vendido</p>
-                            </div>
-                            <span className="font-mono text-amber-400 font-semibold">
-                              {formatMXN(car.precio)}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </div>
+                <SalesSummary />
               </div>
 
-              <div className="pt-4 border-t border-white/10">
-                <button
-                  onClick={() => window.print()}
-                  className="w-full py-3 rounded-xl bg-white text-black font-bold text-xs uppercase tracking-wider hover:bg-neutral-200 transition-all flex items-center justify-center gap-2"
-                >
-                  <Receipt size={16} /> Imprimir Cierre de Turno
-                </button>
-              </div>
+
             </motion.div>
           </motion.div>
         )}

@@ -11,7 +11,6 @@ import {
   Car, 
   CreditCard, 
   UserCheck, 
-  QrCode 
 } from "lucide-react";
 
 export interface POSTicketData {
@@ -104,12 +103,13 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          role="dialog" aria-modal="true" aria-label="Recibo de operación"
           className="relative w-full max-w-xl my-8 bg-[#0a0a0c] border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl text-white"
         >
           {/* Action Header */}
@@ -122,6 +122,7 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
             </div>
             <button
               onClick={onClose}
+              aria-label="Cerrar recibo"
               className="p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
             >
               <X size={20} />
@@ -144,10 +145,10 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
                 <Sparkles size={12} /> LOCADEDCAR LUXURY MOTORS POS
               </div>
               <h1 className="text-2xl font-black tracking-tight text-white">
-                COMPROBANTE DE VENTA OFICIAL
+                RECIBO DE OPERACIÓN
               </h1>
               <p className="text-xs text-neutral-400 mt-1">
-                Concesionaria Master • Ciudad de México • RFC: LCD260910-VIP
+                LocadedCar · Comprobante interno, no es factura fiscal
               </p>
               <div className="mt-3 flex items-center justify-center gap-3 text-xs font-mono text-neutral-300">
                 <span>FOLIO: <strong className="text-amber-400">{ticket.folio}</strong></span>
@@ -186,7 +187,7 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
               <div className="mt-3 flex items-center justify-between text-xs text-neutral-400 bg-white/5 p-2 rounded-lg">
                 <span>Estado de Entrega:</span>
                 <span className="font-bold text-emerald-400 uppercase tracking-wide">
-                  {ticket.estadoUnidad === "vendido" ? "Asignado para Entrega Inmediata" : "Apartado Confirmado (10%)"}
+                  {ticket.estadoUnidad === "vendido" ? "Asignado para Entrega Inmediata" : "Apartado confirmado"}
                 </span>
               </div>
             </div>
@@ -262,38 +263,7 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
                 <span className="text-neutral-300">{getMetodoPagoLabel(ticket.metodoPago)}</span>
               </div>
               <div className="flex items-center gap-1.5 text-emerald-400 font-mono text-[11px]">
-                <ShieldCheck size={14} /> AUTORIZADO
-              </div>
-            </div>
-
-            {/* Stylized Barcode and QR Section */}
-            <div className="mt-4 pt-4 border-t border-dashed border-white/20 flex items-center justify-between">
-              {/* Pseudo Barcode */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-[3px] h-9">
-                  {[2, 4, 1, 3, 5, 2, 4, 1, 6, 2, 3, 1, 4, 2, 5, 1, 3, 2, 4, 1, 5, 3, 2, 4, 1].map((w, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white"
-                      style={{ width: `${w}px`, height: "100%" }}
-                    ></div>
-                  ))}
-                </div>
-                <span className="font-mono text-[9px] text-neutral-500 tracking-widest">
-                  *{ticket.folio.replace(/[^A-Z0-9]/g, "")}*
-                </span>
-              </div>
-
-              {/* QR Mockup */}
-              <div className="flex items-center gap-2">
-                <div className="p-1 bg-white rounded-md">
-                  <QrCode size={40} className="text-black" />
-                </div>
-                <div className="text-[9px] text-neutral-400 leading-tight">
-                  <p className="font-bold text-white">VALIDACIÓN SAT/POS</p>
-                  <p>Escanee para consultar</p>
-                  <p>garantía institucional</p>
-                </div>
+                <ShieldCheck size={14} /> REGISTRADO
               </div>
             </div>
 
@@ -316,10 +286,11 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
               onClick={handlePrint}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-all shadow-lg hover:shadow-white/10"
             >
-              <Printer size={18} /> Imprimir Comprobante Fiscal
+              <Printer size={18} /> Imprimir recibo
             </button>
             <button
               onClick={onClose}
+              aria-label="Cerrar recibo"
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-lg hover:shadow-emerald-500/20"
             >
               <CheckCircle2 size={18} /> Nueva Transacción en Terminal

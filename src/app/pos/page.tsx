@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import POSClient from "./POSClient";
 
 export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
+
 
 export default async function POSPage() {
   // 1. Fetch initial inventory with color variants

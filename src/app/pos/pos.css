@@ -1,0 +1,14 @@
+.pos-screen { overflow-x: clip; }
+.pos-screen input, .pos-screen select, .pos-screen textarea { min-width: 0; min-height: 44px; font-size: 16px; }
+.pos-screen button { min-height: 40px; }
+.pos-screen :focus-visible { outline: 2px solid #fbbf24; outline-offset: 3px; }
+.pos-screen .grid > *, .pos-screen .flex > * { min-width: 0; }
+@media (max-width: 639px) {
+  .pos-screen header { gap: 8px; padding-inline: 12px; }
+  .pos-screen .text-2xl { font-size: 1.25rem; }
+}
+@media print {
+  body * { visibility: hidden; }
+  #printable-receipt, #printable-receipt * { visibility: visible; color: #000 !important; background: #fff !important; box-shadow: none !important; }
+  #printable-receipt { position: absolute; inset: 0 auto auto 0; width: 100%; margin: 0; border: 0; }
+}
