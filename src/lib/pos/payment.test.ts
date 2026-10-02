@@ -15,3 +15,21 @@ test('invalid amounts cannot become full-price sales', () => {
 test('reject malformed requests and buyer data', () => {
   for (const body of [null, [], {}, { cliente: { nombre: 'A', correo: 'invalid' } }]) assert.throws(() => validateRequest(body));
 });
+
+
+test('accepts simulated contactless payments', () => {
+  const request = validateRequest({
+    vehiculoId: 'vehiculo-demo',
+    modalidad: 'contado',
+    metodoPago: 'contactless',
+    montoTotal: 1000,
+    montoRecibido: 1000,
+    descuento: 0,
+    cliente: {
+      nombre: 'Cliente Demo',
+      correo: 'demo@locadedcar.test',
+    },
+  });
+
+  assert.equal(request.metodoPago, 'contactless');
+});
