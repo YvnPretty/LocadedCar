@@ -77,6 +77,8 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
     switch (metodo) {
       case "tarjeta":
         return "Terminal TPV Black Card (NFC/Chip)";
+      case "contactless":
+        return "Tap to Pay iPhone (Simulación Contactless)";
       case "spei":
         return "Transferencia Interbancaria SPEI (STP)";
       case "efectivo":
