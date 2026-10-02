@@ -33,7 +33,7 @@ export function validateRequest(body: unknown) {
   const modalidad = text(data.modalidad);
   const metodoPago = text(data.metodoPago);
   if (!vehiculoId) throw new POSValidationError('Seleccione un vehículo.');
-  if (!['tarjeta', 'spei', 'efectivo', 'financiamiento'].includes(metodoPago)) throw new POSValidationError('Método de pago inválido.');
+  if (!['tarjeta', 'contactless', 'spei', 'efectivo', 'financiamiento'].includes(metodoPago)) throw new POSValidationError('Método de pago inválido.');
   const plazoMeses = number(data.plazoMeses ?? undefined);
   if (metodoPago === 'financiamiento' && ![12,24,36,48].includes(plazoMeses)) throw new POSValidationError('Plazo inválido.');
   return { vehiculoId, colorVarianteId: text(data.colorVarianteId), cliente, modalidad, metodoPago, montoTotal: number(data.montoTotal), montoRecibido: number(data.montoRecibido), descuento: number(data.descuento), plazoMeses, notasVenta: text(data.notasVenta, 2000), vendedorNombre: text(data.vendedorNombre) };
