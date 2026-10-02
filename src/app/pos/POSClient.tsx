@@ -803,8 +803,9 @@ export default function POSClient({
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
               <button
                 type="button"
+                disabled={contactlessSession?.status === "pending"}
                 onClick={() => setMetodoPago("tarjeta")}
-                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${
+                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "tarjeta"
                     ? "bg-amber-500/20 border-amber-400 text-amber-300"
                     : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
@@ -816,8 +817,9 @@ export default function POSClient({
 
               <button
                 type="button"
+                disabled={contactlessSession?.status === "pending"}
                 onClick={() => setMetodoPago("contactless")}
-                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${
+                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "contactless"
                     ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
                     : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
@@ -829,8 +831,9 @@ export default function POSClient({
 
               <button
                 type="button"
+                disabled={contactlessSession?.status === "pending"}
                 onClick={() => setMetodoPago("spei")}
-                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${
+                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "spei"
                     ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
                     : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
@@ -842,8 +845,9 @@ export default function POSClient({
 
               <button
                 type="button"
+                disabled={contactlessSession?.status === "pending"}
                 onClick={() => setMetodoPago("efectivo")}
-                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${
+                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "efectivo"
                     ? "bg-emerald-500/20 border-emerald-400 text-emerald-300"
                     : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
@@ -855,8 +859,9 @@ export default function POSClient({
 
               <button
                 type="button"
+                disabled={contactlessSession?.status === "pending"}
                 onClick={() => setMetodoPago("financiamiento")}
-                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${
+                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "financiamiento"
                     ? "bg-purple-500/20 border-purple-400 text-purple-300"
                     : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
