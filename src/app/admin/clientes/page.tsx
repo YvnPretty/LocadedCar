@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import {
   Users,
   UserCheck,
@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-const prisma = new PrismaClient();
 
 export default async function AdminClientesPage() {
   const clientes = await prisma.cliente.findMany({

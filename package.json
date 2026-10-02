@@ -9,7 +9,9 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
-    "test": "node --import tsx --test src/lib/*.test.ts src/lib/pos/*.test.ts tests/*.test.mjs"
+    "test": "node --import tsx --test src/lib/*.test.ts src/lib/pos/*.test.ts tests/*.test.mjs",
+    "predev": "node scripts/setup-local.mjs",
+    "setup": "node scripts/setup-local.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -37,6 +39,6 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node --import tsx prisma/seed.ts"
   }
 }

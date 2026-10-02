@@ -1,119 +1,24 @@
-import { resolveVehicleImage } from "@/lib/vehicle-media";
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { POSValidationError } from "@/lib/pos/payment";
+import { registerSale } from "@/lib/pos/sale";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { 
-      vehiculoId, 
-      nombre, 
-      correo, 
-      telefono, 
-      montoTotal, 
-      metodoPago, 
-      modalidad,
-      direccion,
-      ciudad,
-      estado,
-      rfc 
-    } = body;
-
-    if (!vehiculoId || !nombre || !correo) {
-      return NextResponse.json(
-        { error: "Los campos de vehículo, nombre y correo son obligatorios." },
-        { status: 400 }
-      );
-    }
-
-    const result = await prisma.$transaction(async (tx) => {
-      const vehiculo = await tx.vehiculo.findUnique({
-        where: { id: vehiculoId },
-        include: { colores: true }
-      });
-
-      if (!vehiculo) {
-        throw new Error("El vehículo seleccionado no existe en el catálogo.");
-      }
-
-      const reservado = await tx.vehiculo.updateMany({
-        where: { id: vehiculo.id, estado: "disponible" },
-        data: { estado: "vendido" }
-      });
-
-      if (reservado.count !== 1) {
-        throw new Error("Esta unidad ya no está disponible; otro proceso la reservó primero.");
-      }
-
-      let vendedor = await tx.vendedor.findFirst();
-      if (!vendedor) {
-        vendedor = await tx.vendedor.create({
-          data: {
-            nombre: "Asesor Concierge LocadedCar VIP",
-            usuario: "concierge_vip",
-            contrasena: "secret_vip_2026"
-          }
-        });
-      }
-
-      const cliente = await tx.cliente.upsert({
-        where: { correo },
-        update: { nombre, telefono: telefono || undefined, direccion, ciudad, estado, rfc },
-        create: { nombre, correo, telefono: telefono || undefined, direccion, ciudad, estado, rfc }
-      });
-
-      const transaccion = await tx.transaccion.create({
-        data: {
-          montoTotal: Number(montoTotal) || vehiculo.precio,
-          vehiculoId: vehiculo.id,
-          clienteId: cliente.id,
-          vendedorId: vendedor.id
-        },
-        include: { vehiculo: true, cliente: true, vendedor: true }
-      });
-
-      return { vehiculo, cliente, vendedor, transaccion };
+    let body;
+    try { body = await request.json(); } catch { throw new POSValidationError("JSON inválido."); }
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new POSValidationError("Solicitud inválida.");
+    const modality = body.modalidad === "Liquidación Total 100%" ? "contado" : body.modalidad === "Apartado de Chasis (10% de Anticipo)" ? "apartado_10" : body.modalidad;
+    const method = ({ "Tarjeta de Crédito / Débito": "tarjeta", "Transferencia Interbancaria SPEI": "spei", "Financiamiento VIP": "financiamiento" } as Record<string, string>)[body.metodoPago] || body.metodoPago;
+    const receipt = await registerSale({
+      vehiculoId: body.vehiculoId, colorVarianteId: body.colorVarianteId, cliente: { nombre: body.nombre, correo: body.correo, telefono: body.telefono, direccion: body.direccion, ciudad: body.ciudad, estado: body.estado, rfc: body.rfc },
+      modalidad: modality, metodoPago: method, montoTotal: body.montoTotal, montoRecibido: body.montoTotal,
+      descuento: 0, plazoMeses: method === "financiamiento" ? body.plazoMeses ?? 24 : null,
+      notasVenta: body.notasVenta, vendedorNombre: "Asesor Concierge LocadedCar VIP",
     });
-
-    const { vehiculo, cliente, vendedor, transaccion } = result;
-
-    return NextResponse.json({
-      success: true,
-      transaccionId: transaccion.id,
-      fecha: transaccion.fecha,
-      montoTotal: transaccion.montoTotal,
-      modalidad: modalidad || "Pago Total Contado",
-      metodoPago: metodoPago || "Tarjeta de Crédito",
-      vehiculo: {
-        id: vehiculo.id,
-        marca: vehiculo.marca,
-        modelo: vehiculo.modelo,
-        anio: vehiculo.anio,
-        precio: vehiculo.precio,
-        imagenUrl: resolveVehicleImage(vehiculo)
-      },
-      cliente: {
-        id: cliente.id,
-        nombre: cliente.nombre,
-        correo: cliente.correo,
-        telefono: cliente.telefono,
-        direccion: cliente.direccion,
-        ciudad: cliente.ciudad,
-        estado: cliente.estado,
-        rfc: cliente.rfc
-      },
-      vendedor: {
-        nombre: vendedor.nombre
-      }
-    });
-  } catch (error: any) {
-    console.error("Error al procesar pago:", error);
-    const status = error.message?.includes("ya no está disponible") ? 409 : 500;
-    return NextResponse.json(
-      { error: error.message || "Error interno al procesar el pago." },
-      { status }
-    );
+    return NextResponse.json({ ...receipt, success: true, modalidad: body.modalidad, metodoPago: body.metodoPago });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    const status = error instanceof POSValidationError ? 422 : message.includes("ya no está disponible") ? 409 : 500;
+    return NextResponse.json({ error: status === 500 ? "No se pudo registrar el pago. Revise la conexión e intente de nuevo." : message }, { status });
   }
 }

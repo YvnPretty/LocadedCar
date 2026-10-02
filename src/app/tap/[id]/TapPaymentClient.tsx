@@ -19,6 +19,7 @@ interface PaymentSession {
   status: SessionStatus;
   createdAt: string;
   expiresAt: string;
+  receipt?: { folio: string } | null;
 }
 
 export default function TapPaymentClient({ sessionId }: { sessionId: string }) {
@@ -85,8 +86,9 @@ export default function TapPaymentClient({ sessionId }: { sessionId: string }) {
           <CheckCircle2 className="mx-auto mb-2 text-emerald-400" size={42} />
           <p className="font-black text-emerald-300">PAGO APROBADO</p>
           <p className="mt-1 text-sm text-neutral-300">
-            La terminal LocadedCar recibirá la confirmación automáticamente.
+            La venta y el recibo ya quedaron registrados.
           </p>
+          {session.receipt && <p className="mt-3 break-all font-mono text-xs text-amber-300">Folio: {session.receipt.folio}</p>}
         </div>
       );
     }

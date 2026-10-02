@@ -8,7 +8,7 @@
   .pos-screen .text-2xl { font-size: 1.25rem; }
 }
 @media print {
-  body * { visibility: hidden; }
+  body:has(#printable-receipt) * { visibility: hidden; }
   #printable-receipt, #printable-receipt * { visibility: visible; color: #000 !important; background: #fff !important; box-shadow: none !important; }
   #printable-receipt { position: absolute; inset: 0 auto auto 0; width: 100%; margin: 0; border: 0; }
 }

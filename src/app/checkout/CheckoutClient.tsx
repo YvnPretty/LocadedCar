@@ -99,7 +99,7 @@ export default function CheckoutClient({
 
   // Cálculos financieros
   const precioBase = selectedCar.precio;
-  const montoAPagar = modalidad === "total" ? precioBase : Math.round(precioBase * 0.10);
+  const montoAPagar = modalidad === "total" ? precioBase : Math.round(precioBase * 10) / 100;
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -144,6 +144,9 @@ export default function CheckoutClient({
         estado: formData.estado,
         rfc: formData.rfc,
         montoTotal: montoAPagar,
+        colorVarianteId: selectedCar.colores?.find(c => c.nombre === selectedColor)?.id,
+        plazoMeses: paymentMethod === "finance" ? plazoMeses : null,
+        notasVenta: formData.notas,
         metodoPago: paymentMethod === "card" ? "Tarjeta de Crédito / Débito" : paymentMethod === "spei" ? "Transferencia Interbancaria SPEI" : "Financiamiento VIP",
         modalidad: modalidad === "total" ? "Liquidación Total 100%" : "Apartado de Chasis (10% de Anticipo)"
       };

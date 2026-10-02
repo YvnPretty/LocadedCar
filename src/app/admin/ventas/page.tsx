@@ -2,7 +2,7 @@ import VehicleImage from "@/components/VehicleImage";
 import { vehicleName } from "@/lib/vehicle-media";
 import React from "react";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import {
   CreditCard,
   TrendingUp,
@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-const prisma = new PrismaClient();
 
 export default async function AdminVentasPage() {
   const transacciones = await prisma.transaccion.findMany({
@@ -56,6 +55,7 @@ export default async function AdminVentasPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Link href="/pos/pagos" className="rounded-xl border border-amber-400/30 px-4 py-2 text-xs font-bold text-amber-300">Buscar pagos y recibos</Link>
           <Link
             href="/pos"
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all"

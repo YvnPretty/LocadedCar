@@ -1,9 +1,8 @@
 import CatalogGrid from "@/components/CatalogGrid";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
 
 export default async function Catalogo({ searchParams }: { searchParams: Promise<{ marca?: string; tipo?: string; todos?: string }> }) {
   const filters = await searchParams;

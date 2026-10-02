@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import {
   FileText,
   Mail,
@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-const prisma = new PrismaClient();
 
 export default async function AdminCotizacionesPage() {
   const cotizaciones = await prisma.cotizacion.findMany({

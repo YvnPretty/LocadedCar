@@ -2,7 +2,7 @@ import VehicleImage from "@/components/VehicleImage";
 import { vehicleName } from "@/lib/vehicle-media";
 import React from "react";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import {
   DollarSign,
   Car,
@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-const prisma = new PrismaClient();
 
 export default async function AdminDashboardPage() {
   // Fetch real-time statistics from database

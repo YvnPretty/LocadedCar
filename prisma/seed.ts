@@ -12,11 +12,6 @@ async function main() {
     return
   }
 
-  await prisma.colorVariante.deleteMany()
-  await prisma.transaccion.deleteMany()
-  await prisma.vehiculo.deleteMany()
-  await prisma.cliente.deleteMany()
-  await prisma.vendedor.deleteMany()
 
   console.log('Seeding database with premium sports cars...')
 

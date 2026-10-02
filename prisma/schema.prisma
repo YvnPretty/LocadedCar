@@ -72,6 +72,9 @@ model Transaccion {
   id           String        @id @default(uuid())
   fecha        DateTime      @default(now())
   montoTotal   Float
+  metodoPago   String?
+  modalidad    String?
+  recibo       String?       // Snapshot del recibo, sin datos de tarjeta
   
   vehiculoId   String
   vehiculo     Vehiculo      @relation(fields: [vehiculoId], references: [id])
@@ -81,6 +84,17 @@ model Transaccion {
   
   vendedorId   String
   vendedor     Vendedor      @relation(fields: [vendedorId], references: [id])
+}
+
+model ContactlessSession {
+  id            String   @id @default(uuid())
+  amount        Float
+  vehicle       String
+  status        String   @default("pending")
+  salePayload   String
+  transaccionId String?  @unique
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
 }
 
 model ColorVariante {

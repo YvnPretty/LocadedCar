@@ -21,7 +21,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/pos")) {
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/pos") || pathname?.startsWith("/tap")) {
     return null;
   }
 
@@ -89,6 +89,7 @@ export default function Navbar() {
           </div>
 
           <ResumeLink href="/catalogo" className="text-sm text-white/70 hover:text-white">Catálogo</ResumeLink>
+          <Link href="/pos/pagos" className="text-sm text-amber-300">Buscar pagos</Link>
           <Link href="/nosotros" className="text-sm font-medium text-white/70 hover:text-white transition-colors">Nosotros</Link>
           <Link href="/contacto" className="text-sm font-medium text-white/70 hover:text-white transition-colors">Contacto</Link>
           <Link href="/checkout" className="text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1.5">
@@ -122,6 +123,7 @@ export default function Navbar() {
           >
             <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-3">
               <ResumeLink href="/catalogo" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white">Catálogo</ResumeLink>
+              <Link href="/pos/pagos" onClick={() => setMobileOpen(false)} className="text-amber-300">Buscar pagos</Link>
               <Link href="/nosotros" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white">Nosotros</Link>
               <Link href="/contacto" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white">Contacto</Link>
               <Link href="/checkout" onClick={() => setMobileOpen(false)} className="text-amber-400 hover:text-amber-300">Continuar compra</Link>

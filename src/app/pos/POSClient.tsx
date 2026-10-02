@@ -105,12 +105,11 @@ export default function POSClient({
   const [isTicketOpen, setIsTicketOpen] = useState(false);
   const [showShiftDrawer, setShowShiftDrawer] = useState(false);
   const [time, setTime] = useState<string>("");
-  const [contactlessSession, setContactlessSession] = useState<{
+  const [contactlessSession, setContactlessSession] = useSessionState<{
     id: string;
     paymentUrl: string;
     status: "pending" | "approved" | "declined" | "expired";
-  } | null>(null);
-  const contactlessPayload = useRef<Record<string, unknown> | null>(null);
+  } | null>("pos:tap-session", null);
   const contactlessCompleting = useRef(false);
 
   // Clock ticker
@@ -192,6 +191,26 @@ export default function POSClient({
     }
   };
 
+  const acceptReceipt = React.useCallback((receipt: POSTicketData) => {
+    clearSessionDraft("pos");
+    setTicketData(receipt);
+    setIsTicketOpen(true);
+
+    setCars((prev) =>
+      prev.map((car) =>
+        car.id === receipt.vehiculo.id
+          ? { ...car, estado: receipt.estadoUnidad }
+          : car
+      )
+    );
+
+    setClients((prev) =>
+      prev.some((client) => client.correo === receipt.cliente.correo)
+        ? prev
+        : [receipt.cliente, ...prev]
+    );
+  }, [setTicketData, setIsTicketOpen, setCars, setClients]);
+
   const finalizeSale = React.useCallback(async (payload: Record<string, unknown>) => {
     const res = await fetch("/api/pos/transaccion", {
       method: "POST",
@@ -205,24 +224,9 @@ export default function POSClient({
       throw new Error(data.error || "Fallo en la comunicación con la terminal.");
     }
 
-    clearSessionDraft("pos");
-    setTicketData(data.data);
-    setIsTicketOpen(true);
+    acceptReceipt(data.data);
+  }, [acceptReceipt]);
 
-    setCars((prev) =>
-      prev.map((car) =>
-        car.id === data.data.vehiculo.id
-          ? { ...car, estado: data.data.estadoUnidad }
-          : car
-      )
-    );
-
-    setClients((prev) =>
-      prev.some((client) => client.correo === data.data.cliente.correo)
-        ? prev
-        : [data.data.cliente, ...prev]
-    );
-  }, []);
 
   // Submit Sale / Process POS
   const handleProcessSale = async () => {
@@ -282,10 +286,7 @@ export default function POSClient({
         const sessionResponse = await fetch("/api/payments/contactless", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: totalACobrar,
-            vehicle: `${selectedCar.marca} ${selectedCar.modelo} (${selectedCar.anio})`
-          })
+          body: JSON.stringify(payload)
         });
 
         const sessionData = await sessionResponse.json();
@@ -293,7 +294,6 @@ export default function POSClient({
           throw new Error(sessionData.error || "No fue posible iniciar Tap to Pay demo.");
         }
 
-        contactlessPayload.current = payload;
         contactlessCompleting.current = false;
         setContactlessSession(sessionData.data);
         return;
@@ -320,45 +320,30 @@ export default function POSClient({
           cache: "no-store"
         });
         const data = await response.json();
-        if (!response.ok || cancelled) return;
-
+        if (cancelled) return;
+        if (!response.ok) {
+          setErrorMsg(data.error || "No se pudo consultar el pago. Seguiremos intentando.");
+          if (response.status === 404) setContactlessSession(null);
+          return;
+        }
         const status = data.data.status as "pending" | "approved" | "declined" | "expired";
-
         if (status === "approved" && !contactlessCompleting.current) {
-          const payload = contactlessPayload.current;
-          if (!payload) {
-            setErrorMsg("La sesión fue aprobada, pero no se encontró la venta pendiente.");
-            setContactlessSession(null);
-            return;
-          }
-
+          if (!data.data.receipt) { setErrorMsg("El recibo aún no está disponible. Seguiremos consultando."); return; }
           contactlessCompleting.current = true;
-          submitting.current = true;
-          setLoading(true);
-
-          try {
-            await finalizeSale(payload);
-            contactlessPayload.current = null;
-            setContactlessSession(null);
-          } catch (err) {
-            setErrorMsg(err instanceof Error ? err.message : "El pago fue aprobado, pero no se pudo registrar la venta.");
-            setContactlessSession((prev) => prev ? { ...prev, status: "approved" } : prev);
-          } finally {
-            submitting.current = false;
-            setLoading(false);
-          }
+          acceptReceipt(data.data.receipt);
+          setContactlessSession(null);
+          setErrorMsg(null);
           return;
         }
 
         if (status === "declined" || status === "expired") {
-          contactlessPayload.current = null;
           setContactlessSession(null);
           setErrorMsg(status === "declined"
             ? "El pago sin contacto fue rechazado desde el iPhone."
             : "La sesión Tap to Pay expiró. Genere una nueva sesión.");
         }
       } catch {
-        // A transient polling error should not cancel the simulated payment session.
+        if (!cancelled) setErrorMsg("Sin conexión con la terminal. El pago se conserva; reintentando…");
       }
     };
 
@@ -368,12 +353,12 @@ export default function POSClient({
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [contactlessSession?.id, contactlessSession?.status, finalizeSale]);
+  }, [contactlessSession?.id, contactlessSession?.status, acceptReceipt, setContactlessSession]);
 
   return (
     <div className="pos-screen min-h-screen bg-[#060709] text-white flex flex-col font-sans selection:bg-amber-500 selection:text-black">
       {/* 1. TOP HUD TELEMETRY BAR */}
-      <header className="sticky top-0 z-40 bg-[#0b0d11]/90 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-2.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#0b0d11]/90 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-2.5 flex flex-wrap gap-2 items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-200 flex items-center justify-center text-black font-black text-xs shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
@@ -403,6 +388,7 @@ export default function POSClient({
 
         {/* Right Section: Cashier and Actions */}
         <div className="flex items-center gap-3">
+          <Link href="/pos/pagos" className="rounded-xl border border-amber-400/30 px-3 py-2 text-xs font-bold text-amber-300">Buscar pagos</Link>
           <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-xs">
             <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-[10px]">
               VIP
@@ -898,6 +884,7 @@ export default function POSClient({
                       Abrir simulador de pago
                     </a>
                     <p className="text-[10px] leading-relaxed text-neutral-400">
+                      <button type="button" className="mr-2 text-amber-300 underline" onClick={async () => { try { await navigator.clipboard.writeText(contactlessSession.paymentUrl); } catch { setErrorMsg("Copie manualmente el enlace mostrado."); } }}>Copiar enlace</button>
                       Abra esa dirección en el iPhone. Al tocar “Aprobar pago”, el POS detectará la confirmación y emitirá el recibo automáticamente.
                     </p>
                   </>

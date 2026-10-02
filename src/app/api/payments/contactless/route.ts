@@ -1,37 +1,22 @@
+import { networkInterfaces } from "node:os";
+import { contactlessBaseUrl } from "@/lib/contactless-url";
 import { NextResponse } from "next/server";
 import { createContactlessSession } from "@/lib/contactless-sim";
+import { POSValidationError } from "@/lib/pos/payment";
 
 export const runtime = "nodejs";
 
-function publicBaseUrl(request: Request) {
-  const configured = process.env.CONTACTLESS_PUBLIC_BASE_URL?.trim().replace(/\/+$/, "");
-  if (configured) {
-    try {
-      const parsed = new URL(configured);
-      if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.origin;
-    } catch {
-      // Fall back to the request origin when the demo URL is malformed.
-    }
-  }
-
-  return new URL(request.url).origin;
+function localInterfaces() {
+  if (process.env.NODE_ENV === "production") return {};
+  try { return networkInterfaces(); } catch { return {}; }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { amount?: unknown; vehicle?: unknown };
-    const amount = typeof body.amount === "number" ? body.amount : Number(body.amount);
-    const vehicle = typeof body.vehicle === "string" ? body.vehicle : "";
-
-    if (!Number.isFinite(amount) || amount <= 0 || !vehicle.trim()) {
-      return NextResponse.json(
-        { error: "Monto y vehículo son obligatorios para iniciar Tap to Pay demo." },
-        { status: 422 },
-      );
-    }
-
-    const session = createContactlessSession(amount, vehicle);
-    const baseUrl = publicBaseUrl(request);
+    let body: unknown;
+    try { body = await request.json(); } catch { throw new POSValidationError("JSON inválido."); }
+    const session = await createContactlessSession(body);
+    const baseUrl = contactlessBaseUrl(request.url, process.env.CONTACTLESS_PUBLIC_BASE_URL, localInterfaces());
 
     return NextResponse.json({
       success: true,
@@ -41,10 +26,10 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error al crear sesión contactless:", error);
+    if (!(error instanceof POSValidationError)) console.error("Error al crear sesión contactless:", error);
     return NextResponse.json(
-      { error: "No fue posible crear la sesión de pago sin contacto." },
-      { status: 500 },
+      { error: error instanceof POSValidationError ? error.message : "No fue posible crear la sesión de pago sin contacto." },
+      { status: error instanceof POSValidationError ? 422 : 500 },
     );
   }
 }

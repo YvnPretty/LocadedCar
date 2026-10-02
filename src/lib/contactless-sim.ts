@@ -1,68 +1,53 @@
-import { randomUUID } from "node:crypto";
+import { prisma } from "@/lib/prisma";
+import { calculatePayment, POSValidationError, validateRequest } from "@/lib/pos/payment";
+import { registerSaleInTransaction } from "@/lib/pos/sale";
 
 export type ContactlessStatus = "pending" | "approved" | "declined" | "expired";
-
-export interface ContactlessSession {
-  id: string;
-  amount: number;
-  vehicle: string;
-  status: ContactlessStatus;
-  createdAt: string;
-  expiresAt: string;
-}
-
-type ContactlessStore = Map<string, ContactlessSession>;
-
-const globalStore = globalThis as typeof globalThis & {
-  __locadedContactlessStore?: ContactlessStore;
-};
-
-const store = globalStore.__locadedContactlessStore ?? new Map<string, ContactlessSession>();
-globalStore.__locadedContactlessStore = store;
-
 const SESSION_TTL_MS = 10 * 60 * 1000;
 
-export function createContactlessSession(amount: number, vehicle: string): ContactlessSession {
-  if (!Number.isFinite(amount) || amount <= 0) {
-    throw new Error("El monto del pago sin contacto es inválido.");
-  }
-
-  const now = Date.now();
-  const session: ContactlessSession = {
-    id: randomUUID(),
-    amount: Math.round((amount + Number.EPSILON) * 100) / 100,
-    vehicle: vehicle.trim().slice(0, 160) || "Vehículo LocadedCar",
-    status: "pending",
-    createdAt: new Date(now).toISOString(),
-    expiresAt: new Date(now + SESSION_TTL_MS).toISOString(),
-  };
-
-  store.set(session.id, session);
-  return session;
+export async function createContactlessSession(body: unknown) {
+  const payload = validateRequest(body);
+  if (payload.metodoPago !== "contactless") throw new POSValidationError("Seleccione Tap iPhone para crear la sesión.");
+  const car = await prisma.vehiculo.findUnique({ where: { id: payload.vehiculoId }, include: { colores: true } });
+  if (!car || car.estado !== "disponible") throw new POSValidationError("Esta unidad ya no está disponible.");
+  const payment = calculatePayment(car.precio, payload.modalidad, payload.descuento, payload.montoTotal);
+  if (payment.total !== payload.montoTotal) throw new POSValidationError("El precio cambió. Actualice el catálogo antes de cobrar.");
+  if (payload.colorVarianteId && !car.colores.some(c => c.id === payload.colorVarianteId)) throw new POSValidationError("El color no pertenece al vehículo.");
+  const session = await prisma.contactlessSession.create({ data: {
+    amount: payment.total,
+    vehicle: `${car.marca} ${car.modelo} (${car.anio})`,
+    salePayload: JSON.stringify(payload),
+    expiresAt: new Date(Date.now() + SESSION_TTL_MS),
+  } });
+  return publicSession(session);
 }
 
-export function getContactlessSession(id: string): ContactlessSession | null {
-  const session = store.get(id);
+// Never expose the captured customer data or server-side sale payload in session metadata.
+function publicSession(session: { id: string; amount: number; vehicle: string; status: string; createdAt: Date; expiresAt: Date; transaccionId: string | null }) {
+  return { id: session.id, amount: session.amount, vehicle: session.vehicle, status: session.status as ContactlessStatus,
+    createdAt: session.createdAt.toISOString(), expiresAt: session.expiresAt.toISOString(), transaccionId: session.transaccionId };
+}
+
+export async function getContactlessSession(id: string) {
+  await prisma.contactlessSession.updateMany({ where: { id, status: "pending", expiresAt: { lte: new Date() } }, data: { status: "expired" } });
+  const session = await prisma.contactlessSession.findUnique({ where: { id } });
   if (!session) return null;
-
-  if (session.status === "pending" && Date.now() > Date.parse(session.expiresAt)) {
-    const expired = { ...session, status: "expired" as const };
-    store.set(id, expired);
-    return expired;
-  }
-
-  return session;
+  const sale = session.transaccionId ? await prisma.transaccion.findUnique({ where: { id: session.transaccionId }, select: { recibo: true } }) : null;
+  return { ...publicSession(session), receipt: sale?.recibo ? JSON.parse(sale.recibo) : null };
 }
 
-export function updateContactlessSession(
-  id: string,
-  status: Extract<ContactlessStatus, "approved" | "declined">,
-): ContactlessSession | null {
-  const current = getContactlessSession(id);
-  if (!current) return null;
-  if (current.status !== "pending") return current;
-
-  const updated: ContactlessSession = { ...current, status };
-  store.set(id, updated);
-  return updated;
+export async function updateContactlessSession(id: string, status: "approved" | "declined") {
+  const current = await getContactlessSession(id);
+  if (!current || current.status !== "pending") return current;
+  await prisma.$transaction(async tx => {
+    // Conditional claim and receipt creation share a transaction. Retrying cannot duplicate the sale.
+    const claimed = await tx.contactlessSession.updateMany({
+      where: { id, status: "pending", expiresAt: { gt: new Date() } }, data: { status },
+    });
+    if (!claimed.count || status === "declined") return;
+    const session = await tx.contactlessSession.findUniqueOrThrow({ where: { id } });
+    const receipt = await registerSaleInTransaction(tx, JSON.parse(session.salePayload));
+    await tx.contactlessSession.update({ where: { id }, data: { transaccionId: receipt.transaccionId } });
+  });
+  return getContactlessSession(id);
 }

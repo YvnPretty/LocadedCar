@@ -1,11 +1,10 @@
 import { vehicleName } from "@/lib/vehicle-media";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Gauge, Settings2, CheckCircle2, CreditCard } from "lucide-react";
 import Link from "next/link";
 import CarMediaViewer from "@/components/CarMediaViewer";
 
-const prisma = new PrismaClient();
 
 // Disable caching for params
 export const dynamic = 'force-dynamic';

@@ -27,7 +27,7 @@ export function validateRequest(body: unknown) {
   };
   if (!data.cliente || typeof data.cliente !== 'object' || Array.isArray(data.cliente)) throw new POSValidationError('Comprador obligatorio.');
   const client = data.cliente as Record<string, unknown>;
-  const cliente = { nombre: text(client.nombre), correo: text(client.correo).toLowerCase(), telefono: text(client.telefono, 30), rfc: text(client.rfc, 20), direccion: text(client.direccion) };
+  const cliente = { nombre: text(client.nombre), correo: text(client.correo).toLowerCase(), telefono: text(client.telefono, 30), rfc: text(client.rfc, 20), direccion: text(client.direccion), ciudad: text(client.ciudad), estado: text(client.estado) };
   if (!cliente.nombre || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cliente.correo)) throw new POSValidationError('Ingrese nombre y correo válido del comprador.');
   const vehiculoId = text(data.vehiculoId);
   const modalidad = text(data.modalidad);

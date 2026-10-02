@@ -295,7 +295,7 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
               aria-label="Cerrar recibo"
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-lg hover:shadow-emerald-500/20"
             >
-              <CheckCircle2 size={18} /> Nueva Transacción en Terminal
+              <CheckCircle2 size={18} /> Cerrar recibo
             </button>
           </div>
         </motion.div>
