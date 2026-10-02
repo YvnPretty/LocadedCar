@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   CreditCard,
+  Smartphone,
   Banknote,
   Send,
   Calendar,
@@ -90,7 +91,7 @@ export default function POSClient({
 
   // Transaction Parameters
   const [modalidad, setModalidad] = useSessionState<"contado" | "apartado_10" | "personalizado">("pos:mode", "contado");
-  const [metodoPago, setMetodoPago] = useSessionState<"tarjeta" | "spei" | "efectivo" | "financiamiento">("pos:method", "tarjeta");
+  const [metodoPago, setMetodoPago] = useSessionState<"tarjeta" | "contactless" | "spei" | "efectivo" | "financiamiento">("pos:method", "tarjeta");
   const [descuentoComercial, setDescuentoComercial] = useSessionState<number>("pos:discount", 0);
   const [montoPersonalizado, setMontoPersonalizado] = useSessionState<string>("pos:deposit", "");
   const [efectivoRecibido, setEfectivoRecibido] = useSessionState<string>("pos:cash", "");
@@ -104,6 +105,13 @@ export default function POSClient({
   const [isTicketOpen, setIsTicketOpen] = useState(false);
   const [showShiftDrawer, setShowShiftDrawer] = useState(false);
   const [time, setTime] = useState<string>("");
+  const [contactlessSession, setContactlessSession] = useState<{
+    id: string;
+    paymentUrl: string;
+    status: "pending" | "approved" | "declined" | "expired";
+  } | null>(null);
+  const contactlessPayload = useRef<Record<string, unknown> | null>(null);
+  const contactlessCompleting = useRef(false);
 
   // Clock ticker
   useEffect(() => {
@@ -184,6 +192,38 @@ export default function POSClient({
     }
   };
 
+  const finalizeSale = React.useCallback(async (payload: Record<string, unknown>) => {
+    const res = await fetch("/api/pos/transaccion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Fallo en la comunicación con la terminal.");
+    }
+
+    clearSessionDraft("pos");
+    setTicketData(data.data);
+    setIsTicketOpen(true);
+
+    setCars((prev) =>
+      prev.map((car) =>
+        car.id === data.data.vehiculo.id
+          ? { ...car, estado: data.data.estadoUnidad }
+          : car
+      )
+    );
+
+    setClients((prev) =>
+      prev.some((client) => client.correo === data.data.cliente.correo)
+        ? prev
+        : [data.data.cliente, ...prev]
+    );
+  }, []);
+
   // Submit Sale / Process POS
   const handleProcessSale = async () => {
     if (submitting.current) return;
@@ -238,36 +278,28 @@ export default function POSClient({
         vendedorNombre: defaultVendedor.nombre
       };
 
-      const res = await fetch("/api/pos/transaccion", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      if (metodoPago === "contactless") {
+        const sessionResponse = await fetch("/api/payments/contactless", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: totalACobrar,
+            vehicle: `${selectedCar.marca} ${selectedCar.modelo} (${selectedCar.anio})`
+          })
+        });
 
-      const data = await res.json();
+        const sessionData = await sessionResponse.json();
+        if (!sessionResponse.ok) {
+          throw new Error(sessionData.error || "No fue posible iniciar Tap to Pay demo.");
+        }
 
-      if (!res.ok) {
-        throw new Error(data.error || "Fallo en la comunicación con la terminal.");
+        contactlessPayload.current = payload;
+        contactlessCompleting.current = false;
+        setContactlessSession(sessionData.data);
+        return;
       }
 
-      // Update state locally
-      clearSessionDraft("pos");
-      setTicketData(data.data);
-      setIsTicketOpen(true);
-
-      // Update cars list to reflect sold/apartado status
-      setCars((prev) =>
-        prev.map((c) =>
-          c.id === selectedCar.id
-            ? { ...c, estado: data.data.estadoUnidad }
-            : c
-        )
-      );
-
-      // Add client to local cache if newly created
-      if (!clients.some((c) => c.correo === data.data.cliente.correo)) {
-        setClients((prev) => [data.data.cliente, ...prev]);
-      }
+      await finalizeSale(payload);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Error al procesar la venta.");
     } finally {
@@ -275,6 +307,68 @@ export default function POSClient({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const sessionId = contactlessSession?.id;
+    if (!sessionId || contactlessSession.status !== "pending") return;
+
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const response = await fetch(`/api/payments/contactless/${sessionId}`, {
+          cache: "no-store"
+        });
+        const data = await response.json();
+        if (!response.ok || cancelled) return;
+
+        const status = data.data.status as "pending" | "approved" | "declined" | "expired";
+
+        if (status === "approved" && !contactlessCompleting.current) {
+          const payload = contactlessPayload.current;
+          if (!payload) {
+            setErrorMsg("La sesión fue aprobada, pero no se encontró la venta pendiente.");
+            setContactlessSession(null);
+            return;
+          }
+
+          contactlessCompleting.current = true;
+          submitting.current = true;
+          setLoading(true);
+
+          try {
+            await finalizeSale(payload);
+            contactlessPayload.current = null;
+            setContactlessSession(null);
+          } catch (err) {
+            setErrorMsg(err instanceof Error ? err.message : "El pago fue aprobado, pero no se pudo registrar la venta.");
+            setContactlessSession((prev) => prev ? { ...prev, status: "approved" } : prev);
+          } finally {
+            submitting.current = false;
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (status === "declined" || status === "expired") {
+          contactlessPayload.current = null;
+          setContactlessSession(null);
+          setErrorMsg(status === "declined"
+            ? "El pago sin contacto fue rechazado desde el iPhone."
+            : "La sesión Tap to Pay expiró. Genere una nueva sesión.");
+        }
+      } catch {
+        // A transient polling error should not cancel the simulated payment session.
+      }
+    };
+
+    void poll();
+    const interval = window.setInterval(() => void poll(), 1200);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [contactlessSession?.id, contactlessSession?.status, finalizeSale]);
 
   return (
     <div className="pos-screen min-h-screen bg-[#060709] text-white flex flex-col font-sans selection:bg-amber-500 selection:text-black">
@@ -339,7 +433,7 @@ export default function POSClient({
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-3 text-sm">
         <p className="text-neutral-300">{selectedCar ? `Venta en preparación · ${vehicleName(selectedCar)}` : "Selecciona un vehículo para iniciar una venta"}</p>
-        <button type="button" disabled={loading} className="text-amber-300 underline" onClick={() => { if (window.confirm("¿Descartar la captura actual?")) clearSessionDraft("pos"); }}>Nueva venta</button>
+        <button type="button" disabled={loading || contactlessSession?.status === "pending"} className="text-amber-300 underline disabled:opacity-40" onClick={() => { if (window.confirm("¿Descartar la captura actual?")) clearSessionDraft("pos"); }}>Nueva venta</button>
       </div>
       {/* 2. MAIN DUAL-PANE COCKPIT */}
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 overflow-hidden">
@@ -706,7 +800,7 @@ export default function POSClient({
               Método de Cobro en Terminal
             </label>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => setMetodoPago("tarjeta")}
@@ -718,6 +812,19 @@ export default function POSClient({
               >
                 <CreditCard size={18} />
                 <span className="text-[11px] font-medium">TPV Card</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMetodoPago("contactless")}
+                className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${
+                  metodoPago === "contactless"
+                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
+                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                }`}
+              >
+                <Smartphone size={18} />
+                <span className="text-[11px] font-medium">Tap iPhone</span>
               </button>
 
               <button
@@ -759,6 +866,43 @@ export default function POSClient({
                 <span className="text-[11px] font-medium">Crédito</span>
               </button>
             </div>
+
+            {metodoPago === "contactless" && (
+              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 space-y-2.5 text-xs">
+                <div className="flex items-center gap-2">
+                  <Smartphone size={16} className="text-cyan-300" />
+                  <span className="font-bold text-cyan-200">Tap to Pay · modo simulación</span>
+                </div>
+
+                {contactlessSession ? (
+                  <>
+                    <div className="rounded-lg border border-white/10 bg-black/30 p-2.5">
+                      <p className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+                        SESIÓN PENDIENTE · ESPERANDO IPHONE
+                      </p>
+                      <p className="mt-1 break-all text-[11px] text-neutral-300">
+                        {contactlessSession.paymentUrl}
+                      </p>
+                    </div>
+                    <a
+                      href={contactlessSession.paymentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-10 items-center justify-center rounded-lg border border-cyan-400/30 bg-cyan-500/15 px-3 py-2 font-bold text-cyan-200 hover:bg-cyan-500/25"
+                    >
+                      Abrir simulador de pago
+                    </a>
+                    <p className="text-[10px] leading-relaxed text-neutral-400">
+                      Abra esa dirección en el iPhone. Al tocar “Aprobar pago”, el POS detectará la confirmación y emitirá el recibo automáticamente.
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-[10px] leading-relaxed text-neutral-400">
+                    Al registrar la venta se generará una sesión temporal. No se procesa dinero ni se leen tarjetas reales.
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Sub-interfaces depending on payment method */}
             {metodoPago === "efectivo" && (
@@ -874,13 +1018,18 @@ export default function POSClient({
 
             <button
               onClick={handleProcessSale}
-              disabled={loading || !selectedCar || selectedCar.estado !== "disponible"}
+              disabled={loading || !selectedCar || selectedCar.estado !== "disponible" || (metodoPago === "contactless" && contactlessSession?.status === "pending")}
               className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-black shadow-lg shadow-amber-500/25 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
                   <span className="w-4 h-4 rounded-full border-2 border-black border-t-transparent animate-spin"></span>
                   Registrando operación…
+                </>
+              ) : metodoPago === "contactless" && contactlessSession?.status === "pending" ? (
+                <>
+                  <Smartphone size={18} />
+                  Esperando confirmación en iPhone…
                 </>
               ) : selectedCar && selectedCar.estado !== "disponible" ? (
                 "Unidad Vendida / No Disponible"
