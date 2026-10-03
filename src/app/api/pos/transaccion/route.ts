@@ -1,5 +1,6 @@
 import { resolveVehicleImage } from "@/lib/vehicle-media";
 import { NextResponse } from "next/server";
+import { requireApprovedContactlessSession, consumeContactlessSession } from "@/lib/contactless-sim";
 import { prisma } from "@/lib/prisma";
 import { calculatePayment, money, POSValidationError, validateRequest } from "@/lib/pos/payment";
 
@@ -7,7 +8,7 @@ export async function POST(request: Request) {
   try {
     let body: unknown;
     try { body = await request.json(); } catch { throw new POSValidationError("JSON inválido."); }
-    const { vehiculoId, colorVarianteId, cliente, modalidad, metodoPago, montoTotal, montoRecibido, descuento, plazoMeses, notasVenta, vendedorNombre } = validateRequest(body);
+    const { contactlessSessionId, vehiculoId, colorVarianteId, cliente, modalidad, metodoPago, montoTotal, montoRecibido, descuento, plazoMeses, notasVenta, vendedorNombre } = validateRequest(body);
     const clienteCorreo = cliente.correo;
 
     // Ejecución Atómica con Prisma $transaction
@@ -26,6 +27,9 @@ export async function POST(request: Request) {
       if (money(montoTotal) !== payment.total) throw new POSValidationError("El precio cambió. Actualice el catálogo antes de cobrar.");
       if (colorVarianteId && !vehiculo.colores.some(c => c.id === colorVarianteId)) throw new POSValidationError("El color no pertenece al vehículo.");
       if (metodoPago === "efectivo" && montoRecibido < payment.total) throw new POSValidationError("El efectivo recibido es insuficiente.");
+      if (metodoPago === "contactless") {
+        requireApprovedContactlessSession(contactlessSessionId, vehiculoId, payment.total);
+      }
       const reservado = await tx.vehiculo.updateMany({
         where: { id: vehiculo.id, estado: "disponible" },
         data: { estado: payment.state }
@@ -137,6 +141,8 @@ export async function POST(request: Request) {
         }
       };
     });
+
+    if (metodoPago === "contactless") consumeContactlessSession(contactlessSessionId);
 
     return NextResponse.json({
       success: true,
