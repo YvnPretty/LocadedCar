@@ -1,3 +1,4 @@
+import { ensureVehicleColors } from './ensure-vehicle-colors'
 import { repairVehicleImages } from './repair-vehicle-images'
 import { PrismaClient } from '@prisma/client'
 
@@ -8,6 +9,7 @@ async function main() {
   const existingVehicles = await prisma.vehiculo.count()
 
   if (existingVehicles > 0) {
+    await ensureVehicleColors(prisma)
     console.log(`Database already contains ${existingVehicles} vehicles; skipping seed.`)
     return
   }
@@ -129,6 +131,7 @@ async function main() {
   })
 
   await repairVehicleImages(prisma)
+  await ensureVehicleColors(prisma)
   console.log('Seeded database with cars and color variants!')
 }
 
