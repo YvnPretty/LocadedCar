@@ -75,7 +75,7 @@ export default function CheckoutClient({
 
   // Estados de proceso y éxito
   const [isProcessing, setIsProcessing] = useState(false);
-  const [receiptData, setReceiptData] = useState<{ transaccionId: string; fecha: string; vehiculo: { marca: string; modelo: string; anio: number }; cliente: { nombre: string }; modalidad: string; metodoPago: string; montoTotal: number } | null>(null);
+  const [receiptData, setReceiptData] = useState<{ transaccionId: string; fecha: string; vehiculo: { marca: string; modelo: string; anio: number; color?: { nombre: string; hex: string } | null }; cliente: { nombre: string }; modalidad: string; metodoPago: string; montoTotal: number } | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -136,6 +136,7 @@ export default function CheckoutClient({
     try {
       const payload = {
         vehiculoId: selectedCar.id,
+        colorVarianteId: selectedCar.colores?.find(color => color.nombre === selectedColor)?.id,
         nombre: formData.nombre,
         correo: formData.correo,
         telefono: formData.telefono,
@@ -768,6 +769,7 @@ export default function CheckoutClient({
                         key={col.id}
                         type="button"
                         onClick={() => setSelectedColor(col.nombre)}
+                        aria-pressed={selectedColor === col.nombre}
                         className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs transition-all ${
                           selectedColor === col.nombre ? "border-white bg-white/20 text-white font-medium" : "border-white/10 bg-white/5 text-white/60"
                         }`}
@@ -872,6 +874,7 @@ export default function CheckoutClient({
                 <div className="flex justify-between">
                   <span className="text-white/40">Vehículo:</span>
                   <span className="text-white font-bold">{receiptData.vehiculo.marca} {receiptData.vehiculo.modelo} ({receiptData.vehiculo.anio})</span>
+                  {receiptData.vehiculo.color && <span className="block text-sm text-white/70">Color: {receiptData.vehiculo.color.nombre}</span>}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/40">Titular / Cliente:</span>

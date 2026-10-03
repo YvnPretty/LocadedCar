@@ -8,7 +8,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { 
-      vehiculoId, 
+      vehiculoId,
+      colorVarianteId,
       nombre, 
       correo, 
       telefono, 
@@ -37,6 +38,9 @@ export async function POST(request: Request) {
       if (!vehiculo) {
         throw new Error("El vehículo seleccionado no existe en el catálogo.");
       }
+
+      const color = colorVarianteId ? vehiculo.colores.find(item => item.id === colorVarianteId) : null;
+      if (colorVarianteId && !color) throw new Error("El color no pertenece al vehículo seleccionado.");
 
       const reservado = await tx.vehiculo.updateMany({
         where: { id: vehiculo.id, estado: "disponible" },
@@ -74,10 +78,10 @@ export async function POST(request: Request) {
         include: { vehiculo: true, cliente: true, vendedor: true }
       });
 
-      return { vehiculo, cliente, vendedor, transaccion };
+      return { vehiculo, cliente, vendedor, transaccion, color };
     });
 
-    const { vehiculo, cliente, vendedor, transaccion } = result;
+    const { vehiculo, cliente, vendedor, transaccion, color } = result;
 
     return NextResponse.json({
       success: true,
@@ -92,7 +96,8 @@ export async function POST(request: Request) {
         modelo: vehiculo.modelo,
         anio: vehiculo.anio,
         precio: vehiculo.precio,
-        imagenUrl: resolveVehicleImage(vehiculo)
+        imagenUrl: resolveVehicleImage(vehiculo, color?.imagenUrl),
+        color: color ? { nombre: color.nombre, hex: color.hex } : null
       },
       cliente: {
         id: cliente.id,
@@ -108,11 +113,12 @@ export async function POST(request: Request) {
         nombre: vendedor.nombre
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error al procesar pago:", error);
-    const status = error.message?.includes("ya no está disponible") ? 409 : 500;
+    const message = error instanceof Error ? error.message : "Error interno al procesar el pago.";
+    const status = message.includes("ya no está disponible") ? 409 : message.includes("El color no pertenece") ? 422 : 500;
     return NextResponse.json(
-      { error: error.message || "Error interno al procesar el pago." },
+      { error: message },
       { status }
     );
   }

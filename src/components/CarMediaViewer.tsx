@@ -93,7 +93,7 @@ export default function CarMediaViewer({ imageUrl, brand, model, status, dbColor
           <span className="text-sm text-white/70 tracking-wide uppercase font-medium">
             Configuración: <span className="text-white ml-2">{selectedDBColor?.nombre}</span>
           </span>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             {dbColors.map((color) => (
               <button
                 key={color.nombre}
@@ -108,6 +108,7 @@ export default function CarMediaViewer({ imageUrl, brand, model, status, dbColor
                   background: color.hex.toLowerCase() === '#ffffff' ? 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)' : color.hex
                 }}
                 aria-label={color.nombre}
+                aria-pressed={selectedDBColor?.nombre === color.nombre}
               />
             ))}
           </div>
