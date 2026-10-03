@@ -39,3 +39,17 @@ Cambie `192.168.1.100` por la IP local de la computadora. El iPhone y la computa
 ## Alcance
 
 La sesión se mantiene en memoria y expira después de 10 minutos. Está diseñada únicamente para demostraciones locales o académicas. No procesa Apple Pay, NFC bancario ni tarjetas reales.
+
+## Validación en servidor
+
+La creación de sesión requiere `amount` (número positivo), `vehicle` (etiqueta) y
+`vehicleId` (identificador de la unidad). El POS envía `contactlessSessionId` al
+registrar la venta. El servidor exige una sesión aprobada y vigente para ese
+mismo vehículo y monto; la elimina después de confirmar la transacción.
+Una sesión rechazada, pendiente, expirada o usada no autoriza otra venta.
+
+Si el servidor reinicia y pierde la sesión, el POS permite iniciar otra.
+Si la aprobación llega pero la venta falla, se muestra “PAGO APROBADO · VENTA
+NO REGISTRADA”. Revise el inventario antes de iniciar un nuevo intento.
+La simulación sigue siendo local, en un solo proceso: las sesiones no se
+comparten entre servidores y se pierden al reiniciar. No procesa dinero real.

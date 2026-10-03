@@ -222,7 +222,7 @@ export default function POSClient({
         ? prev
         : [data.data.cliente, ...prev]
     );
-  }, []);
+  }, [setTicketData, setIsTicketOpen, setCars, setClients]);
 
   // Submit Sale / Process POS
   const handleProcessSale = async () => {
@@ -284,6 +284,7 @@ export default function POSClient({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             amount: totalACobrar,
+            vehicleId: selectedCar.id,
             vehicle: `${selectedCar.marca} ${selectedCar.modelo} (${selectedCar.anio})`
           })
         });
@@ -293,7 +294,7 @@ export default function POSClient({
           throw new Error(sessionData.error || "No fue posible iniciar Tap to Pay demo.");
         }
 
-        contactlessPayload.current = payload;
+        contactlessPayload.current = { ...payload, contactlessSessionId: sessionData.data.id };
         contactlessCompleting.current = false;
         setContactlessSession(sessionData.data);
         return;
@@ -320,7 +321,14 @@ export default function POSClient({
           cache: "no-store"
         });
         const data = await response.json();
-        if (!response.ok || cancelled) return;
+        if (cancelled) return;
+        if (response.status === 404) {
+          contactlessPayload.current = null;
+          setContactlessSession(null);
+          setErrorMsg("La sesión Tap iPhone ya no está disponible. Genere una nueva sesión.");
+          return;
+        }
+        if (!response.ok) return;
 
         const status = data.data.status as "pending" | "approved" | "declined" | "expired";
 
@@ -883,7 +891,7 @@ export default function POSClient({
                   <>
                     <div className="rounded-lg border border-white/10 bg-black/30 p-2.5">
                       <p className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
-                        SESIÓN PENDIENTE · ESPERANDO IPHONE
+                        {contactlessSession.status === "approved" ? "PAGO APROBADO · VENTA NO REGISTRADA" : "SESIÓN PENDIENTE · ESPERANDO IPHONE"}
                       </p>
                       <p className="mt-1 break-all text-[11px] text-neutral-300">
                         {contactlessSession.paymentUrl}
