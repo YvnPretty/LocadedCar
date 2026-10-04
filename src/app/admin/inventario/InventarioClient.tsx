@@ -3,22 +3,16 @@
 import { useSessionState } from "@/hooks/useSessionState";
 import VehicleImage from "@/components/VehicleImage";
 import { vehicleName } from "@/lib/vehicle-media";
-import React, { useState } from "react";
+import { vehicleTemplates } from "@/lib/vehicle-templates";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import {
   Car,
   Plus,
   Search,
-  Filter,
-  CheckCircle2,
-  XCircle,
   ExternalLink,
   Terminal,
-  Sparkles,
-  DollarSign,
-  Layers,
   X,
-  RefreshCw
 } from "lucide-react";
 
 interface ColorVariante {
@@ -47,6 +41,10 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
   const [statusFilter, setStatusFilter] = useSessionState("inventory:status", "ALL");
   const [showAddModal, setShowAddModal] = useSessionState("inventory:adding", false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [createError, setCreateError] = useState("");
 
   // New Car Form State
   const [newCar, setNewCar] = useSessionState("inventory:new", {
@@ -101,7 +99,10 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
   // Create new car
   const handleCreateCar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCar.marca || !newCar.modelo || !newCar.precio) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
+    setCreateError("");
 
     try {
       const res = await fetch("/api/admin/vehiculos", {
@@ -110,8 +111,9 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
         body: JSON.stringify(newCar)
       });
       const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || "No se pudo guardar la unidad.");
       if (data.success) {
-        setCars([data.vehiculo, ...cars]);
+        setCars(previous => [data.vehiculo, ...previous]);
         setShowAddModal(false);
         setNewCar({
           marca: "",
@@ -125,7 +127,10 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
         });
       }
     } catch (err) {
-      console.error(err);
+      setCreateError(err instanceof Error ? err.message : "No se pudo guardar la unidad. Intenta de nuevo.");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   };
 
@@ -234,7 +239,7 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
                   <tr key={car.id} className="hover:bg-white/5 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <VehicleImage car={car} className="w-14 h-10  rounded-lg border border-white/10" />
+                        <VehicleImage car={car} sizes="56px" className="w-14 h-10  rounded-lg border border-white/10" />
                         <div>
                           <span className="text-[10px] font-mono text-amber-400 uppercase font-bold">
                             {car.marca}
@@ -318,39 +323,58 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
       {/* MODAL: ALTA DE NUEVO VEHÍCULO */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[#0e1117] border border-white/15 rounded-3xl p-6 w-full max-w-lg shadow-2xl space-y-4 text-white">
+          <div role="dialog" aria-modal="true" aria-labelledby="new-vehicle-title" className="bg-[#0e1117] border border-white/15 rounded-3xl p-4 sm:p-6 w-full max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto shadow-2xl space-y-4 text-white">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <h3 className="text-lg font-bold flex items-center gap-2 text-cyan-400">
+              <h3 id="new-vehicle-title" className="text-lg font-bold flex items-center gap-2 text-cyan-400">
                 <Car size={18} /> Registrar Nuevo Vehículo en Flota
               </h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1 rounded-full text-neutral-400 hover:text-white"
+                aria-label="Cerrar formulario" disabled={saving} className="p-3 rounded-full text-neutral-400 hover:text-white"
               >
                 <X size={18} />
               </button>
             </div>
 
+            <section aria-label="Modelos precargados" className="space-y-3">
+              <div><h4 className="font-semibold">Elige un modelo para empezar</h4>
+                <p className="text-xs text-neutral-400">Fotos y datos de referencia para tu demostración. Puedes modificar los datos antes de guardar una nueva unidad.</p></div>
+              <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
+                {vehicleTemplates.map(template => (
+                  <button key={`${template.marca}-${template.modelo}`} type="button" disabled={saving}
+                    aria-label={`Usar ${template.marca} ${template.modelo}`}
+                    onClick={() => { setNewCar(template); setCreateError(""); }}
+                    className="w-36 shrink-0 snap-start rounded-xl border border-white/15 bg-white/5 p-2 text-left hover:border-cyan-400 focus-visible:outline-2 focus-visible:outline-cyan-400">
+                    <VehicleImage car={template} sizes="128px" className="h-20 w-full rounded-lg" />
+                    <span className="mt-2 block text-xs font-bold">{template.marca}</span>
+                    <span className="block text-xs text-neutral-300">{template.modelo}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
             <form onSubmit={handleCreateCar} className="space-y-3 text-xs">
+              <fieldset disabled={saving} className="space-y-3 disabled:opacity-60">
+              {newCar.imagenUrl && <VehicleImage car={newCar} sizes="(min-width: 640px) 560px, 90vw" className="h-40 w-full rounded-xl" />}
+              {createError && <p role="alert" className="text-red-300">{createError}</p>}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-neutral-400 block mb-1">Marca:</label>
+                  <label htmlFor="new-car-marca" className="text-neutral-400 block mb-1">Marca:</label>
                   <input
                     type="text"
                     required
                     placeholder="Ej. Porsche, Ferrari"
-                    value={newCar.marca}
+                    id="new-car-marca" value={newCar.marca}
                     onChange={(e) => setNewCar({ ...newCar, marca: e.target.value })}
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
                 </div>
                 <div>
-                  <label className="text-neutral-400 block mb-1">Modelo:</label>
+                  <label htmlFor="new-car-modelo" className="text-neutral-400 block mb-1">Modelo:</label>
                   <input
                     type="text"
                     required
                     placeholder="Ej. 911 GT3 RS"
-                    value={newCar.modelo}
+                    id="new-car-modelo" value={newCar.modelo}
                     onChange={(e) => setNewCar({ ...newCar, modelo: e.target.value })}
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
@@ -359,20 +383,21 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-neutral-400 block mb-1">Año Modelo:</label>
+                  <label htmlFor="new-car-anio" className="text-neutral-400 block mb-1">Año Modelo:</label>
                   <input
                     type="number"
-                    value={newCar.anio}
+                    id="new-car-anio" value={newCar.anio}
                     onChange={(e) => setNewCar({ ...newCar, anio: Number(e.target.value) })}
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-cyan-400 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-neutral-400 block mb-1">Precio de Lista (MXN):</label>
+                  <label htmlFor="new-car-precio" className="text-neutral-400 block mb-1">Precio de Lista (MXN):</label>
                   <input
                     type="number"
+                    min="1" step="0.01"
                     required
-                    value={newCar.precio}
+                    id="new-car-precio" value={newCar.precio}
                     onChange={(e) => setNewCar({ ...newCar, precio: Number(e.target.value) })}
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-cyan-400 font-mono"
                   />
@@ -381,9 +406,9 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-neutral-400 block mb-1">Tipo de Carrocería:</label>
+                  <label htmlFor="new-car-tipo" className="text-neutral-400 block mb-1">Tipo de Carrocería:</label>
                   <select
-                    value={newCar.tipo}
+                    id="new-car-tipo" value={newCar.tipo}
                     onChange={(e) => setNewCar({ ...newCar, tipo: e.target.value })}
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-cyan-400"
                   >
@@ -392,9 +417,9 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
                   </select>
                 </div>
                 <div>
-                  <label className="text-neutral-400 block mb-1">Estado Inicial:</label>
+                  <label htmlFor="new-car-estado" className="text-neutral-400 block mb-1">Estado Inicial:</label>
                   <select
-                    value={newCar.estado}
+                    id="new-car-estado" value={newCar.estado}
                     onChange={(e) => setNewCar({ ...newCar, estado: e.target.value })}
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-cyan-400"
                   >
@@ -406,22 +431,22 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
               </div>
 
               <div>
-                <label className="text-neutral-400 block mb-1">URL de Imagen Principal:</label>
+                <label htmlFor="new-car-imagenUrl" className="text-neutral-400 block mb-1">URL de Imagen Principal:</label>
                 <input
-                  type="url"
-                  placeholder="https://..."
-                  value={newCar.imagenUrl}
+                  type="text"
+                  placeholder="/vehicles/modelo.jpg o https://..."
+                  id="new-car-imagenUrl" value={newCar.imagenUrl}
                   onChange={(e) => setNewCar({ ...newCar, imagenUrl: e.target.value })}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-cyan-400"
                 />
               </div>
 
               <div>
-                <label className="text-neutral-400 block mb-1">Especificaciones Técnicas / Motor:</label>
+                <label htmlFor="new-car-detalles" className="text-neutral-400 block mb-1">Especificaciones Técnicas / Motor:</label>
                 <textarea
                   rows={2}
                   placeholder="Motor, potencia en HP, aceleración 0-100 km/h..."
-                  value={newCar.detalles}
+                  id="new-car-detalles" value={newCar.detalles}
                   onChange={(e) => setNewCar({ ...newCar, detalles: e.target.value })}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-cyan-400 resize-none"
                 ></textarea>
@@ -439,9 +464,10 @@ export default function InventarioClient({ initialCars }: { initialCars: Vehicul
                   type="submit"
                   className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold"
                 >
-                  Guardar en Base de Datos
+                  {saving ? "Guardando…" : "Guardar nueva unidad"}
                 </button>
               </div>
+              </fieldset>
             </form>
           </div>
         </div>

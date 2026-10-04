@@ -844,7 +844,7 @@ export default function CheckoutClient({
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-[#0c0c0c] border border-white/20 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-[0_0_80px_rgba(255,255,255,0.1)] text-white relative my-8"
+              className="bg-[#0c0c0c] border border-white/20 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-[0_0_80px_rgba(255,255,255,0.1)] text-white relative max-h-[calc(100dvh-2rem)] overflow-y-auto"
             >
               {/* Badge de éxito */}
               <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">

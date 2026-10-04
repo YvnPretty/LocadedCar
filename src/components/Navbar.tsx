@@ -17,7 +17,8 @@ export default function Navbar() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -27,10 +28,10 @@ export default function Navbar() {
 
   return (
     <motion.nav
-      initial={{ y: -100 }}
+      initial={false}
       animate={{ y: 0 }}
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "py-4 bg-[#050505]/80 backdrop-blur-xl border-b border-white/10" : "py-6 bg-transparent"
+        scrolled ? "py-4 bg-[#050505]/80 backdrop-blur-xl border-b border-white/10" : "py-4 bg-[#050505]/95 lg:py-6 lg:bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
@@ -38,7 +39,7 @@ export default function Navbar() {
           LOCADED<span className="text-white/50 font-light">CAR</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-8">
           <div
             className="relative"
             onMouseEnter={() => setMenuOpen(true)}
@@ -100,13 +101,14 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            aria-label="Abrir menú"
-            className="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors"
+            aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={mobileOpen}
+            className="lg:hidden p-3 hover:bg-white/10 rounded-full transition-colors"
             onClick={() => setMobileOpen((prev) => !prev)}
           >
             {mobileOpen ? <X size={20} className="text-white" /> : <Menu size={20} className="text-white/80" />}
           </button>
-          <Link href="/contacto" className="hidden md:block glass-button px-5 py-2 rounded-full text-sm font-medium text-white">
+          <Link href="/contacto" className="hidden lg:block glass-button px-5 py-2 rounded-full text-sm font-medium text-white">
             Agendar Cita
           </Link>
         </div>
@@ -118,7 +120,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden overflow-hidden border-t border-white/10 bg-[#050505]/95 backdrop-blur-xl"
+            className="lg:hidden overflow-hidden border-t border-white/10 bg-[#050505]/95 backdrop-blur-xl"
           >
             <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-3">
               <ResumeLink href="/catalogo" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white">Catálogo</ResumeLink>

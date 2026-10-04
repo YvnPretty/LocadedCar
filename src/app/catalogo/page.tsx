@@ -1,9 +1,9 @@
 import CatalogGrid from "@/components/CatalogGrid";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
+
 
 export default async function Catalogo({ searchParams }: { searchParams: Promise<{ marca?: string; tipo?: string; todos?: string }> }) {
   const filters = await searchParams;
@@ -13,7 +13,7 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
 
   return (
     <main className="min-h-screen pt-32 pb-24">
-      <section className="max-w-7xl mx-auto px-6 relative z-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 relative z-20">
         <div className="flex flex-col items-center justify-center text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-light tracking-tight text-white mb-4">
             Catálogo <span className="font-semibold">Exclusivo</span>
