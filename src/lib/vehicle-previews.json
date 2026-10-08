@@ -1,0 +1,23 @@
+{
+  "widths": [
+    320,
+    640,
+    960,
+    1280,
+    1920
+  ],
+  "images": {
+    "/vehicles/bugatti-chiron.jpg": "/vehicle-previews/2a682a81cbf1a5bc",
+    "/vehicles/chevrolet-corvette-z06-c8.jpg": "/vehicle-previews/4ee229405f70437a",
+    "/vehicles/ferrari-f8-tributo.jpg": "/vehicle-previews/8590d0e602938d2e",
+    "/vehicles/ford-mustang-shelby-gt500-s550.jpg": "/vehicle-previews/ac30872c12121037",
+    "/vehicles/lamborghini-aventador-svj.jpg": "/vehicle-previews/db18bb6c6853b41c",
+    "/vehicles/mercedes-amg-gt63-x290.jpg": "/vehicle-previews/a4f39d395c9b58a7",
+    "/vehicles/pagani-huayra-roadster.jpg": "/vehicle-previews/d07eef9e3a3d782b",
+    "/vehicles/porsche-911-gt3-rs-992.jpg": "/vehicle-previews/bc7bb5a1042ed9f0",
+    "/renders/audi_r8_black.jpg": "/vehicle-previews/9675016e72210cae",
+    "/renders/audi_r8_blue.jpg": "/vehicle-previews/19ff67822789dcc7",
+    "/renders/audi_r8_red.jpg": "/vehicle-previews/3879d0a72877679d",
+    "/renders/audi_r8_silver.jpg": "/vehicle-previews/447b9881f267d98e"
+  }
+}

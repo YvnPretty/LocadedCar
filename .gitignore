@@ -19,6 +19,7 @@
 
 # production
 /build
+/public/vehicle-previews/
 
 # misc
 .DS_Store

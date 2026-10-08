@@ -69,7 +69,7 @@ export default function CarMediaViewer({ imageUrl, brand, model, status, dbColor
           {/* AnimatePresence for smooth crossfades between images */}
           <AnimatePresence mode="wait">
             <motion.div key={currentImage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0">
-              <VehicleImage car={{ marca: brand, modelo: model, imagenUrl: imageUrl }} src={currentImage} className="h-full w-full" showCredit />
+              <VehicleImage eager car={{ marca: brand, modelo: model, imagenUrl: imageUrl }} src={currentImage} className="h-full w-full" showCredit />
             </motion.div>
           </AnimatePresence>
 

@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push && prisma db seed && next build",
+    "build": "npm run images:prepare && prisma generate && prisma db push && prisma db seed && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
-    "test": "node --import tsx --test src/lib/*.test.ts src/lib/pos/*.test.ts tests/*.test.mjs"
+    "test": "node --import tsx --test src/lib/*.test.ts src/lib/pos/*.test.ts tests/*.test.mjs",
+    "images:prepare": "node scripts/prepare-vehicle-images.mjs",
+    "predev": "npm run images:prepare"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -21,7 +23,8 @@
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "three": "^0.185.1"
+    "three": "^0.185.1",
+    "sharp": "0.35.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
