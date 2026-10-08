@@ -84,3 +84,25 @@ body::before {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 28px 70px rgba(0,0,0,0.45);
 }
 
+
+/* Reduce compositing work and avoid input zoom on phones. */
+@media (max-width: 767px) {
+  body::before { display: none; }
+  .glass, .glass-panel, .glass-button {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: rgba(20, 22, 28, 0.96);
+  }
+}
+@media (pointer: coarse) {
+  input, select, textarea { font-size: 16px !important; }
+  button, nav a { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

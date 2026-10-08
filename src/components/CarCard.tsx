@@ -1,18 +1,16 @@
-"use client";
 
 import VehicleImage from "@/components/VehicleImage";
 import { vehicleName } from "@/lib/vehicle-media";
-import { motion } from "framer-motion";
 import { ArrowRight, Settings2, Gauge } from "lucide-react";
 import type { Vehiculo } from "@prisma/client";
 import Link from "next/link";
 
-export default function CarCard({ car, index }: { car: Vehiculo; index: number }) {
+export default function CarCard({ car }: { car: Vehiculo; index: number }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
+    <div
+
+
+
       className="group relative rounded-3xl overflow-hidden glass hover:-translate-y-2 transition-all duration-500 hover:shadow-[0_8px_40px_rgba(255,255,255,0.05)] cursor-pointer"
     >
       {/* Etiqueta de Estado */}
@@ -32,16 +30,16 @@ export default function CarCard({ car, index }: { car: Vehiculo; index: number }
         <VehicleImage car={car} className=" w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out" showCredit />
         
         {/* Título sobrepuesto en la imagen */}
-        <div className="absolute bottom-4 left-5 z-20">
+        <div className="absolute bottom-4 left-4 right-4 z-20">
           <p className="text-white/60 text-sm font-medium tracking-wide uppercase">{car.marca}</p>
-          <h3 className="text-2xl font-bold text-white tracking-tight">{vehicleName(car)}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">{vehicleName(car)}</h3>
         </div>
       </div>
 
       {/* Detalles del Auto */}
-      <div className="p-6 bg-gradient-to-b from-[#0a0a0a]/90 to-[#111111]/90 backdrop-blur-xl">
+      <div className="p-4 sm:p-5 bg-gradient-to-b from-[#0a0a0a]/90 to-[#111111]/90 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-3xl font-light text-white">
+          <p className="text-2xl xl:text-3xl break-words font-light text-white">
             {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(car.precio)}
           </p>
         </div>
@@ -51,7 +49,7 @@ export default function CarCard({ car, index }: { car: Vehiculo; index: number }
         </p>
 
         {/* Specs Rápidas */}
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <div className="flex items-center gap-2 text-xs text-white/70 bg-white/5 px-3 py-2 rounded-xl border border-white/5">
             <Gauge size={14} className="text-white/40" />
             <span>{car.anio}</span>
@@ -67,6 +65,6 @@ export default function CarCard({ car, index }: { car: Vehiculo; index: number }
           <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
-    </motion.div>
+    </div>
   );
 }

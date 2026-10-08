@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import CheckoutClient from "./CheckoutClient";
 
-const prisma = new PrismaClient();
+
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({

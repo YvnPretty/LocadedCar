@@ -1,4 +1,5 @@
 "use client";
+import POSClock from "./POSClock";
 
 import { useSessionState, clearSessionDraft } from "@/hooks/useSessionState";
 import ResumeLink from "@/components/ResumeLink";
@@ -17,7 +18,6 @@ import {
   User,
   Plus,
   ShieldCheck,
-  Clock,
   TrendingUp,
   ChevronRight,
   SlidersHorizontal,
@@ -104,7 +104,6 @@ export default function POSClient({
   const [ticketData, setTicketData] = useState<POSTicketData | null>(null);
   const [isTicketOpen, setIsTicketOpen] = useState(false);
   const [showShiftDrawer, setShowShiftDrawer] = useState(false);
-  const [time, setTime] = useState<string>("");
   const [contactlessSession, setContactlessSession] = useState<{
     id: string;
     paymentUrl: string;
@@ -112,19 +111,6 @@ export default function POSClient({
   } | null>(null);
   const contactlessPayload = useRef<Record<string, unknown> | null>(null);
   const contactlessCompleting = useRef(false);
-
-  // Clock ticker
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTime(
-        now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "America/Mexico_City" })
-      );
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Currency Formatter
   const formatMXN = (val: number) =>
@@ -381,7 +367,7 @@ export default function POSClient({
   return (
     <div className="pos-screen min-h-screen bg-[#060709] text-white flex flex-col font-sans selection:bg-amber-500 selection:text-black">
       {/* 1. TOP HUD TELEMETRY BAR */}
-      <header className="sticky top-0 z-40 bg-[#0b0d11]/90 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-2.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#0b0d11]/90 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-2.5 flex flex-wrap gap-2 items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-200 flex items-center justify-center text-black font-black text-xs shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
@@ -402,12 +388,7 @@ export default function POSClient({
           </div>
         </div>
 
-        {/* Center Clock */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-neutral-300">
-          <Clock size={13} className="text-cyan-400" />
-          <span>{time || "12:00:00"}</span>
-          <span className="text-neutral-500">CDMX</span>
-        </div>
+        <POSClock />
 
         {/* Right Section: Cashier and Actions */}
         <div className="flex items-center gap-3">
@@ -422,7 +403,7 @@ export default function POSClient({
           </div>
 
           <button
-            onClick={() => setShowShiftDrawer(!showShiftDrawer)}
+            aria-label="Historial" onClick={() => setShowShiftDrawer(!showShiftDrawer)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-medium transition-all"
           >
             <TrendingUp size={14} />
@@ -472,7 +453,7 @@ export default function POSClient({
             <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
               <button
                 onClick={() => setCategoryFilter("disponible")}
-                className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
+                className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap shrink-0 ${
                   categoryFilter === "disponible"
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
                     : "bg-white/5 text-neutral-400 hover:text-white border border-white/10"
@@ -482,7 +463,7 @@ export default function POSClient({
               </button>
               <button
                 onClick={() => setCategoryFilter("ALL")}
-                className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
+                className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap shrink-0 ${
                   categoryFilter === "ALL"
                     ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
                     : "bg-white/5 text-neutral-400 hover:text-white border border-white/10"
@@ -492,7 +473,7 @@ export default function POSClient({
               </button>
               <button
                 onClick={() => setCategoryFilter("deportivo")}
-                className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
+                className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap shrink-0 ${
                   categoryFilter === "deportivo"
                     ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
                     : "bg-white/5 text-neutral-400 hover:text-white border border-white/10"
@@ -502,7 +483,7 @@ export default function POSClient({
               </button>
               <button
                 onClick={() => setCategoryFilter("semideportivo")}
-                className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
+                className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap shrink-0 ${
                   categoryFilter === "semideportivo"
                     ? "bg-purple-500/20 text-purple-400 border border-purple-500/40"
                     : "bg-white/5 text-neutral-400 hover:text-white border border-white/10"
@@ -633,8 +614,8 @@ export default function POSClient({
           {/* Active Unit Header Card */}
           {selectedCar ? (
             <div className="p-4 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/15 relative overflow-hidden shadow-xl">
-              <div className="flex items-start justify-between">
-                <div className="space-y-0.5">
+              <div className="flex flex-col sm:flex-row gap-3 items-start justify-between">
+                <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 uppercase font-bold">
                       {selectedCar.marca}
@@ -657,7 +638,7 @@ export default function POSClient({
 
               {/* Color variant picked */}
               {selectedColor && (
-                <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-neutral-300">
+                <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap gap-2 items-center justify-between text-xs text-neutral-300">
                   <span className="flex items-center gap-1.5">
                     <span
                       className="w-3 h-3 rounded-full border border-white/40"

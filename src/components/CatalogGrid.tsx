@@ -59,18 +59,18 @@ export default function CatalogGrid({ cars, requestedBrand, requestedType, reset
   }, [cars, selectedBrands, selectedTypes]);
 
   return (
-    <div className="w-full flex flex-col md:flex-row gap-10 items-start">
-      <aside className="w-full md:w-72 flex-shrink-0 mb-8 md:mb-0">
+    <div className="w-full flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
+      <aside className="w-full lg:w-60 xl:w-72 flex-shrink-0 mb-8 lg:mb-0">
         <button
           type="button"
           onClick={() => setIsFiltersOpen((open) => !open)}
-          className="md:hidden w-full flex items-center justify-between px-4 py-3 mb-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white"
+          className="lg:hidden w-full flex items-center justify-between px-4 py-3 mb-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white"
           aria-expanded={isFiltersOpen}
         >
           <span className="flex items-center gap-2"><SlidersHorizontal size={16} /> Filtrar colección</span>
           {isFiltersOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
-        <div className={`${isFiltersOpen ? "block" : "hidden"} md:block glass rounded-3xl p-5 soft-ring`}>
+        <div className={`${isFiltersOpen ? "block" : "hidden"} lg:block glass rounded-3xl p-5 soft-ring`}>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-medium text-white">Filtros</h3>
             <div className="rounded-full bg-white/5 p-2 text-white/70">
@@ -209,7 +209,7 @@ export default function CatalogGrid({ cars, requestedBrand, requestedType, reset
         </div>
       </aside>
 
-      <div className="flex-1">
+      <div className="min-w-0 w-full flex-1">
         <div className="flex justify-between items-center mb-6">
           <p className="text-white/50 text-sm font-medium">{filteredCars.length} modelos</p>
         </div>
@@ -220,7 +220,7 @@ export default function CatalogGrid({ cars, requestedBrand, requestedType, reset
               <motion.div
                 key={car.id}
                 layout
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={false}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}

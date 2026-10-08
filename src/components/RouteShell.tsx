@@ -17,7 +17,7 @@ export default function RouteShell({ children }: { children: React.ReactNode }) 
     <>
       <Navbar />
       <WorkflowNavigation />
-      <main className="flex-1">{children}</main>
+      <div className="flex-1">{children}</div>
       <Footer />
     </>
   );

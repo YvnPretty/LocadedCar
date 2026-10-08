@@ -1,11 +1,11 @@
 import { vehicleName } from "@/lib/vehicle-media";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Gauge, Settings2, CheckCircle2, CreditCard } from "lucide-react";
 import Link from "next/link";
 import CarMediaViewer from "@/components/CarMediaViewer";
 
-const prisma = new PrismaClient();
+
 
 // Disable caching for params
 export const dynamic = 'force-dynamic';
@@ -24,7 +24,7 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
 
   return (
     <main className="min-h-screen pt-32 pb-24">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <Link href="/catalogo" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors mb-8">
           <ArrowLeft size={20} />
           <span>Volver al catálogo</span>
@@ -42,11 +42,11 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
 
           {/* Columna Derecha: Detalles */}
           <div className="flex flex-col justify-center">
-            <h1 className="text-5xl font-light tracking-tight text-white mb-2">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-white mb-2">
               {vehicleName(car)}
             </h1>
             
-            <p className="text-4xl font-light text-white my-6">
+            <p className="text-3xl sm:text-4xl font-light text-white my-6">
               {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(car.precio)}
             </p>
 
