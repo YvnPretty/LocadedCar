@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+
 import "./globals.css";
 import RouteShell from "@/components/RouteShell";
 
-const inter = Inter({ subsets: ["latin"] });
+
 
 export const metadata: Metadata = {
   title: "LocadedCar | Vehículos Deportivos y Semideportivos",
@@ -16,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${inter.className} antialiased selection:bg-white/30 selection:text-white min-h-screen`}>
+    <html lang="es">
+      <body className="antialiased min-h-screen">
         <RouteShell>{children}</RouteShell>
       </body>
     </html>

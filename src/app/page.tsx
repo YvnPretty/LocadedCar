@@ -1,36 +1,9 @@
 import Hero from "@/components/Hero";
 import CatalogGrid from "@/components/CatalogGrid";
-import { PrismaClient } from "@prisma/client";
-
+import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
-
-const prisma = new PrismaClient();
-
 export default async function Home() {
-  // Fetch autos desde SQLite
-  const cars = await prisma.vehiculo.findMany({
-    orderBy: { createdAt: 'desc' }
-  });
-
-  return (
-    <main className="min-h-screen pb-24">
-      <Hero />
-      
-      {/* Catálogo Section */}
-      <section className="max-w-7xl mx-auto px-6 mt-12 relative z-20">
-        <div className="flex items-end justify-between mb-12">
-          <div>
-            <h2 className="text-3xl md:text-5xl font-light tracking-tight text-white mb-2">
-              Nuestra <span className="font-semibold">Colección</span>
-            </h2>
-            <p className="text-white/50 text-sm md:text-base max-w-lg">
-              Explora nuestra cuidada selección de vehículos de alto rendimiento. Cada modelo ha sido inspeccionado para garantizar la máxima calidad.
-            </p>
-          </div>
-        </div>
-
-        <CatalogGrid cars={cars} />
-      </section>
-    </main>
-  );
+ const inventory=await prisma.vehiculo.findMany({orderBy:{createdAt:'asc'}});
+ const cars=[...inventory.filter(c=>c.marca==='Audi'),...inventory.filter(c=>c.marca!=='Audi')];
+ return <main className="collection-page"><Hero car={cars.find(c=>c.marca==='Audi') || cars[0]}/><CatalogGrid cars={cars}/></main>;
 }

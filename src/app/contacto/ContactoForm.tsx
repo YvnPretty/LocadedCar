@@ -38,24 +38,24 @@ export default function ContactoForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div>
-        <label htmlFor="nombre" className="block text-sm text-white/50 mb-2">Nombre Completo</label>
-        <input id="nombre" name="nombre" value={draft.nombre} onChange={e => setDraft({ ...draft, nombre: e.target.value })} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="Ej. Juan Pérez" />
+        <label htmlFor="nombre" className="block text-sm text-muted mb-2">Nombre Completo</label>
+        <input id="nombre" name="nombre" value={draft.nombre} onChange={e => setDraft({ ...draft, nombre: e.target.value })} required className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-ink focus:outline-none focus:border-line transition-colors" placeholder="Ej. Juan Pérez" />
       </div>
       <div>
-        <label htmlFor="correo" className="block text-sm text-white/50 mb-2">Correo Electrónico</label>
-        <input id="correo" name="correo" value={draft.correo} onChange={e => setDraft({ ...draft, correo: e.target.value })} type="email" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="juan@ejemplo.com" />
+        <label htmlFor="correo" className="block text-sm text-muted mb-2">Correo Electrónico</label>
+        <input id="correo" name="correo" value={draft.correo} onChange={e => setDraft({ ...draft, correo: e.target.value })} type="email" required className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-ink focus:outline-none focus:border-line transition-colors" placeholder="juan@ejemplo.com" />
       </div>
       <div>
-        <label htmlFor="telefono" className="block text-sm text-white/50 mb-2">Teléfono</label>
-        <input id="telefono" name="telefono" value={draft.telefono} onChange={e => setDraft({ ...draft, telefono: e.target.value })} type="tel" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="Tu número de contacto" />
+        <label htmlFor="telefono" className="block text-sm text-muted mb-2">Teléfono</label>
+        <input id="telefono" name="telefono" value={draft.telefono} onChange={e => setDraft({ ...draft, telefono: e.target.value })} type="tel" className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-ink focus:outline-none focus:border-line transition-colors" placeholder="Tu número de contacto" />
       </div>
       <div>
-        <label htmlFor="mensaje" className="block text-sm text-white/50 mb-2">Mensaje o Auto de Interés</label>
-        <textarea id="mensaje" name="mensaje" value={draft.mensaje} onChange={e => setDraft({ ...draft, mensaje: e.target.value })} required rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="Me interesa agendar una cita para..." />
+        <label htmlFor="mensaje" className="block text-sm text-muted mb-2">Mensaje o Auto de Interés</label>
+        <textarea id="mensaje" name="mensaje" value={draft.mensaje} onChange={e => setDraft({ ...draft, mensaje: e.target.value })} required rows={4} className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-ink focus:outline-none focus:border-line transition-colors" placeholder="Me interesa agendar una cita para..." />
       </div>
-      {status === "success" && <p className="text-sm text-emerald-400">Solicitud recibida. Un asesor te contactará pronto.</p>}
-      {status === "error" && <p className="text-sm text-red-400">{error}</p>}
-      <button type="submit" disabled={status === "sending"} className="glass-button w-full py-4 rounded-xl text-white font-medium mt-4 disabled:opacity-50">
+      {status === "success" && <p className="text-sm text-brand">Solicitud recibida. Un asesor te contactará pronto.</p>}
+      {status === "error" && <p className="text-sm text-red-700">{error}</p>}
+      <button type="submit" disabled={status === "sending"} className="glass-button w-full py-4 rounded-xl text-ink font-medium mt-4 disabled:opacity-50">
         {status === "sending" ? "Enviando..." : "Enviar Solicitud"}
       </button>
     </form>

@@ -10,14 +10,14 @@ export default function VehicleImage({ car, src, className = '', showCredit = fa
   const resolved = resolveVehicleImage(car, src);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const name = vehicleName(car);
-  return <div className={`relative overflow-hidden bg-[#14171c] ${className}`}>
+  return <div className={`relative overflow-hidden bg-white ${className}`}>
     {resolved && failedSrc !== resolved ? <Image
       src={resolved} alt={`${name}${car.anio ? ` · Año registrado: ${car.anio}` : ''}${isReferenceImage(car, resolved) ? ' · Foto de referencia del modelo' : ''}`}
       fill unoptimized={!resolved.startsWith('/')} sizes="(min-width: 1280px) 40vw, (min-width: 768px) 50vw, 100vw"
       className="object-contain" onError={() => setFailedSrc(resolved)}
-    /> : <div role="img" aria-label={`Foto pendiente: ${name}`} className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-center text-neutral-400">
+    /> : <div role="img" aria-label={`Foto pendiente: ${name}`} className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-center text-muted">
       <span className="text-xs">Foto pendiente</span><span className="text-xs">{name}</span>
     </div>}
-    {showCredit && resolved && isReferenceImage(car, resolved) && <Link href="/creditos-imagenes" onClick={event => event.stopPropagation()} className="absolute left-2 top-2 z-30 rounded bg-black/80 px-2 py-1 text-[10px] text-white hover:underline">Foto de referencia · Créditos</Link>}
+    {showCredit && resolved && isReferenceImage(car, resolved) && <Link href="/creditos-imagenes" onClick={event => event.stopPropagation()} className="absolute left-2 top-2 z-30 rounded bg-surface px-2 py-1 text-[10px] text-ink hover:underline">Foto de referencia · Créditos</Link>}
   </div>;
 }

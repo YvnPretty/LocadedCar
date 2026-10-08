@@ -379,51 +379,51 @@ export default function POSClient({
   }, [contactlessSession?.id, contactlessSession?.status, finalizeSale]);
 
   return (
-    <div className="pos-screen min-h-screen bg-[#060709] text-white flex flex-col font-sans selection:bg-amber-500 selection:text-black">
+    <div className="pos-screen min-h-screen bg-white text-ink flex flex-col font-sans selection:bg-accent selection:text-black">
       {/* 1. TOP HUD TELEMETRY BAR */}
-      <header className="sticky top-0 z-40 bg-[#0b0d11]/90 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-2.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white backdrop-blur-xl border-b border-line px-4 md:px-6 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-200 flex items-center justify-center text-black font-black text-xs shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-accent to-accent flex items-center justify-center text-black font-black text-xs shadow-lg shadow-accent/20 group-hover:scale-105 transition-transform">
               LC
             </div>
-            <span className="font-extrabold tracking-tight text-sm text-white">
-              LOCADED<span className="text-amber-400 font-light">POS</span>
+            <span className="font-extrabold tracking-tight text-sm text-ink">
+              LOCADED<span className="text-brand font-light">POS</span>
             </span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-white/10 text-[11px] font-mono">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+          <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-line text-[11px] font-mono">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-brand border border-emerald-500/20 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               ESTACIÓN ACTIVA: POS-01
             </span>
-            <span className="text-neutral-500">•</span>
-            <span className="text-neutral-400">REGISTRO DE OPERACIONES</span>
+            <span className="text-muted">•</span>
+            <span className="text-muted">REGISTRO DE OPERACIONES</span>
           </div>
         </div>
 
         {/* Center Clock */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-neutral-300">
-          <Clock size={13} className="text-cyan-400" />
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-line text-xs font-mono text-muted">
+          <Clock size={13} className="text-brand" />
           <span>{time || "12:00:00"}</span>
-          <span className="text-neutral-500">CDMX</span>
+          <span className="text-muted">CDMX</span>
         </div>
 
         {/* Right Section: Cashier and Actions */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-xs">
-            <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-[10px]">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-surface border border-line text-xs">
+            <div className="w-6 h-6 rounded-full bg-accent/20 text-brand flex items-center justify-center font-bold text-[10px]">
               VIP
             </div>
             <div className="text-left hidden sm:block">
-              <p className="font-bold text-[11px] text-white leading-tight">{defaultVendedor.nombre}</p>
-              <p className="text-[9px] text-neutral-400 font-mono">Asesor Concierge</p>
+              <p className="font-bold text-[11px] text-ink leading-tight">{defaultVendedor.nombre}</p>
+              <p className="text-[9px] text-muted font-mono">Asesor Concierge</p>
             </div>
           </div>
 
           <button
             onClick={() => setShowShiftDrawer(!showShiftDrawer)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-medium transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent/10 hover:bg-accent/20 text-brand border border-accent/30 text-xs font-medium transition-all"
           >
             <TrendingUp size={14} />
             <span className="hidden sm:inline">Historial</span>
@@ -431,7 +431,7 @@ export default function POSClient({
 
           <ResumeLink
             href="/admin"
-            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-xl bg-surface hover:bg-surface border border-line text-muted hover:text-ink transition-colors"
             title="Continuar en administración"
           >
             <SlidersHorizontal size={16} />
@@ -439,31 +439,31 @@ export default function POSClient({
         </div>
       </header>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-3 text-sm">
-        <p className="text-neutral-300">{selectedCar ? `Venta en preparación · ${vehicleName(selectedCar)}` : "Selecciona un vehículo para iniciar una venta"}</p>
-        <button type="button" disabled={loading || contactlessSession?.status === "pending"} className="text-amber-300 underline disabled:opacity-40" onClick={() => { if (window.confirm("¿Descartar la captura actual?")) clearSessionDraft("pos"); }}>Nueva venta</button>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3 text-sm">
+        <p className="text-muted">{selectedCar ? `Venta en preparación · ${vehicleName(selectedCar)}` : "Selecciona un vehículo para iniciar una venta"}</p>
+        <button type="button" disabled={loading || contactlessSession?.status === "pending"} className="text-brand underline disabled:opacity-40" onClick={() => { if (window.confirm("¿Descartar la captura actual?")) clearSessionDraft("pos"); }}>Nueva venta</button>
       </div>
       {/* 2. MAIN DUAL-PANE COCKPIT */}
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 overflow-hidden">
         
         {/* === LEFT PANE: SHOWROOM & VEHICLE SELECTOR (7 Cols) === */}
-        <div className="xl:col-span-7 flex flex-col border-r border-white/10 bg-[#080a0d]/60 backdrop-blur-md overflow-hidden">
+        <div className="xl:col-span-7 flex flex-col border-r border-line bg-white backdrop-blur-md overflow-hidden">
           
           {/* Search & Category Filter Controls */}
-          <div className="p-4 border-b border-white/10 space-y-3">
+          <div className="p-4 border-b border-line space-y-3">
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   aria-label="Buscar por marca, modelo, año (ej. Porsche, R8, 2024)..." placeholder="Buscar por marca, modelo, año (ej. Porsche, R8, 2024)..."
-                  className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/15 rounded-xl text-xs text-white placeholder-neutral-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 bg-surface border border-line rounded-xl text-xs text-ink placeholder-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all"
                 />
               </div>
 
-              <span className="text-xs font-mono text-neutral-400 bg-white/5 px-2.5 py-2 rounded-xl border border-white/10">
+              <span className="text-xs font-mono text-muted bg-surface px-2.5 py-2 rounded-xl border border-line">
                 {filteredCars.length} resultados
               </span>
             </div>
@@ -474,8 +474,8 @@ export default function POSClient({
                 onClick={() => setCategoryFilter("disponible")}
                 className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
                   categoryFilter === "disponible"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                    : "bg-white/5 text-neutral-400 hover:text-white border border-white/10"
+                    ? "bg-emerald-500/20 text-brand border border-emerald-500/40"
+                    : "bg-surface text-muted hover:text-ink border border-line"
                 }`}
               >
                 ✓ Solo Disponibles
@@ -484,8 +484,8 @@ export default function POSClient({
                 onClick={() => setCategoryFilter("ALL")}
                 className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
                   categoryFilter === "ALL"
-                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
-                    : "bg-white/5 text-neutral-400 hover:text-white border border-white/10"
+                    ? "bg-accent/20 text-brand border border-accent/40"
+                    : "bg-surface text-muted hover:text-ink border border-line"
                 }`}
               >
                 Todos los Vehículos
@@ -494,8 +494,8 @@ export default function POSClient({
                 onClick={() => setCategoryFilter("deportivo")}
                 className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
                   categoryFilter === "deportivo"
-                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                    : "bg-white/5 text-neutral-400 hover:text-white border border-white/10"
+                    ? "bg-accent/20 text-brand border border-accent/40"
+                    : "bg-surface text-muted hover:text-ink border border-line"
                 }`}
               >
                 🏎️ Deportivos
@@ -505,7 +505,7 @@ export default function POSClient({
                 className={`px-3 py-1 rounded-lg font-medium transition-all whitespace-nowrap ${
                   categoryFilter === "semideportivo"
                     ? "bg-purple-500/20 text-purple-400 border border-purple-500/40"
-                    : "bg-white/5 text-neutral-400 hover:text-white border border-white/10"
+                    : "bg-surface text-muted hover:text-ink border border-line"
                 }`}
               >
                 GT / Semideportivos
@@ -515,7 +515,7 @@ export default function POSClient({
 
           {/* Cars Grid */}
           <div className="flex-1 p-4 overflow-y-auto max-h-[55dvh] xl:max-h-[calc(100dvh-140px)] space-y-3">
-            {filteredCars.length === 0 && <p role="status" className="p-8 text-center text-neutral-400">No hay vehículos que coincidan. Pruebe otra búsqueda o filtro.</p>}
+            {filteredCars.length === 0 && <p role="status" className="p-8 text-center text-muted">No hay vehículos que coincidan. Pruebe otra búsqueda o filtro.</p>}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {filteredCars.map((car) => {
                 const isSelected = selectedCar?.id === car.id;
@@ -534,20 +534,20 @@ export default function POSClient({
                     }}
                     className={`group relative p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
-                        ? "bg-gradient-to-b from-amber-500/15 to-transparent border-amber-500/60 shadow-xl shadow-amber-500/10"
-                        : "bg-white/[0.03] hover:bg-white/[0.06] border-white/10"
+                        ? "bg-gradient-to-b from-accent to-transparent border-accent/60 shadow-xl shadow-accent/10"
+                        : "bg-surface hover:bg-surface border-line"
                     }`}
                   >
                     {/* Status & Category Tag */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 px-2 py-0.5 rounded bg-white/5 border border-white/10">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-muted px-2 py-0.5 rounded bg-surface border border-line">
                         {car.tipo}
                       </span>
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                           isAvailable
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                            : "bg-red-500/20 text-red-400 border border-red-500/30"
+                            ? "bg-emerald-500/20 text-brand border border-emerald-500/30"
+                            : "bg-red-500/20 text-red-700 border border-red-500/30"
                         }`}
                       >
                         {car.estado}
@@ -555,17 +555,17 @@ export default function POSClient({
                     </div>
 
                     {/* Image Preview */}
-                    <div className="relative w-full h-36 rounded-xl overflow-hidden bg-black/40 mb-3 border border-white/5">
+                    <div className="relative w-full h-36 rounded-xl overflow-hidden bg-surface mb-3 border border-line">
                       <VehicleImage car={car} src={isSelected ? selectedColor?.imagenUrl : undefined} className="w-full h-full  group-hover:scale-105 transition-transform duration-500" showCredit />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent"></div>
                       
                       {/* Brand and Model Overlay */}
                       <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
                         <div>
-                          <p className="text-[10px] font-bold text-amber-400 tracking-wider uppercase">
+                          <p className="text-[10px] font-bold text-brand tracking-wider uppercase">
                             {car.marca}
                           </p>
-                          <h4 className="text-sm font-bold text-white leading-tight">
+                          <h4 className="text-sm font-bold text-ink leading-tight">
                             {vehicleName(car)} ({car.anio})
                           </h4>
                         </div>
@@ -575,7 +575,7 @@ export default function POSClient({
                     {/* Color variants selector inside card if available */}
                     {car.colores && car.colores.length > 0 && (
                       <div className="flex items-center gap-1.5 mb-2.5">
-                        <span className="text-[10px] text-neutral-400">Variantes:</span>
+                        <span className="text-[10px] text-muted">Variantes:</span>
                         <div className="flex items-center gap-1">
                           {car.colores.map((c) => (
                             <button
@@ -589,8 +589,8 @@ export default function POSClient({
                               aria-label={`Color ${c.nombre}`} aria-pressed={isSelected && selectedColor?.id === c.id}
                               className={`w-10 h-10 rounded-full border transition-all ${
                                 isSelected && selectedColor?.id === c.id
-                                  ? "border-amber-400 scale-125 ring-2 ring-amber-400/30"
-                                  : "border-white/30 hover:scale-110"
+                                  ? "border-accent scale-125 ring-2 ring-accent/30"
+                                  : "border-line hover:scale-110"
                               }`}
                               style={{ backgroundColor: c.hex }}
                               title={c.nombre}
@@ -601,10 +601,10 @@ export default function POSClient({
                     )}
 
                     {/* Card Footer: Price & Action */}
-                    <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                    <div className="pt-2 border-t border-line flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-neutral-400 block leading-none">Precio Contado</span>
-                        <span className="text-sm font-black text-amber-400 font-mono">
+                        <span className="text-[10px] text-muted block leading-none">Precio Contado</span>
+                        <span className="text-sm font-black text-brand font-mono">
                           {formatMXN(car.precio)}
                         </span>
                       </div>
@@ -612,8 +612,8 @@ export default function POSClient({
                       <button
                         className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1 ${
                           isSelected
-                            ? "bg-amber-400 text-black shadow-lg shadow-amber-400/20"
-                            : "bg-white/10 text-white hover:bg-white/20"
+                            ? "bg-accent text-black shadow-lg shadow-accent/20"
+                            : "bg-surface text-ink hover:bg-surface"
                         }`}
                       >
                         {isSelected ? "Seleccionado" : "Cargar"}
@@ -628,28 +628,28 @@ export default function POSClient({
         </div>
 
         {/* === RIGHT PANE: COCKPIT DE DESPACHO & COBRO (5 Cols) === */}
-        <div className="xl:col-span-5 flex flex-col bg-[#0b0e13] overflow-y-auto xl:max-h-[calc(100dvh-50px)] p-4 md:p-6 space-y-4">
+        <div className="xl:col-span-5 flex flex-col bg-white overflow-y-auto xl:max-h-[calc(100dvh-50px)] p-4 md:p-6 space-y-4">
           
           {/* Active Unit Header Card */}
           {selectedCar ? (
-            <div className="p-4 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/15 relative overflow-hidden shadow-xl">
+            <div className="p-4 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-line relative overflow-hidden shadow-xl">
               <div className="flex items-start justify-between">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 uppercase font-bold">
+                    <span className="text-[10px] font-mono text-brand bg-accent/10 px-2 py-0.5 rounded border border-accent/20 uppercase font-bold">
                       {selectedCar.marca}
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-400">
+                    <span className="text-[10px] font-mono text-muted">
                       ID de unidad: {selectedCar.id.slice(0, 8).toUpperCase()}
                     </span>
                   </div>
-                  <h2 className="text-xl font-black text-white">{vehicleName(selectedCar)}</h2>
-                  <p className="text-xs text-neutral-400 line-clamp-1">{selectedCar.detalles || "Unidad de Alto Rendimiento."}</p>
+                  <h2 className="text-xl font-black text-ink">{vehicleName(selectedCar)}</h2>
+                  <p className="text-xs text-muted line-clamp-1">{selectedCar.detalles || "Unidad de Alto Rendimiento."}</p>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] uppercase text-neutral-400">Precio Base</span>
-                  <p className="text-lg font-black text-amber-400 font-mono">
+                  <span className="text-[10px] uppercase text-muted">Precio Base</span>
+                  <p className="text-lg font-black text-brand font-mono">
                     {formatMXN(selectedCar.precio)}
                   </p>
                 </div>
@@ -657,36 +657,36 @@ export default function POSClient({
 
               {/* Color variant picked */}
               {selectedColor && (
-                <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-neutral-300">
+                <div className="mt-3 pt-3 border-t border-line flex items-center justify-between text-xs text-muted">
                   <span className="flex items-center gap-1.5">
                     <span
-                      className="w-3 h-3 rounded-full border border-white/40"
+                      className="w-3 h-3 rounded-full border border-line"
                       style={{ backgroundColor: selectedColor.hex }}
                     ></span>
-                    Configuración: <strong className="text-white">{selectedColor.nombre}</strong>
+                    Configuración: <strong className="text-ink">{selectedColor.nombre}</strong>
                   </span>
-                  <span className="text-[11px] text-emerald-400 font-mono font-medium">Fotomappeo Listo</span>
+                  <span className="text-[11px] text-brand font-mono font-medium">Fotomappeo Listo</span>
                 </div>
               )}
             </div>
           ) : (
-            <div className="p-8 text-center text-neutral-500 border border-dashed border-white/10 rounded-2xl">
+            <div className="p-8 text-center text-muted border border-dashed border-line rounded-2xl">
               Seleccione un auto en el catálogo izquierdo para comenzar el cobro.
             </div>
           )}
 
           {/* 1. SELECTOR DE COMPRADOR VIP */}
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+          <div className="p-4 rounded-2xl bg-surface border border-line space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-                <User size={13} className="text-cyan-400" />
+              <label className="text-xs font-bold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                <User size={13} className="text-brand" />
                 Comprador VIP
               </label>
 
               <button
                 type="button"
                 onClick={() => handleSelectClient("new")}
-                className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold transition"
+                className="text-[11px] text-brand hover:text-brand flex items-center gap-1 font-semibold transition"
               >
                 <Plus size={13} /> Alta Rápida
               </button>
@@ -697,13 +697,13 @@ export default function POSClient({
                 aria-label="Seleccionar comprador"
                 value={selectedClientId}
                 onChange={(e) => handleSelectClient(e.target.value)}
-                className="w-full px-3 py-2 bg-white/5 border border-white/15 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-ink outline-none focus:border-accent"
               >
-                <option value="new" className="bg-neutral-900 text-white">
+                <option value="new" className="bg-white text-ink">
                   👤 Nuevo comprador
                 </option>
                 {clients.map((c) => (
-                  <option key={c.id} value={c.id} className="bg-neutral-900 text-white">
+                  <option key={c.id} value={c.id} className="bg-white text-ink">
                     {c.nombre} ({c.correo})
                   </option>
                 ))}
@@ -715,36 +715,36 @@ export default function POSClient({
                   aria-label="Nombre completo" placeholder="Nombre completo"
                   value={clientForm.nombre}
                   onChange={(e) => setClientForm({ ...clientForm, nombre: e.target.value })}
-                  className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 outline-none focus:border-cyan-400"
+                  className="px-2.5 py-1.5 bg-surface border border-line rounded-lg text-ink placeholder-muted outline-none focus:border-accent"
                 />
                 <input
                   type="text"
                   aria-label="RFC / Tax ID" placeholder="RFC / Tax ID"
                   value={clientForm.rfc}
                   onChange={(e) => setClientForm({ ...clientForm, rfc: e.target.value })}
-                  className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 outline-none focus:border-cyan-400"
+                  className="px-2.5 py-1.5 bg-surface border border-line rounded-lg text-ink placeholder-muted outline-none focus:border-accent"
                 />
                 <input
                   type="email"
                   aria-label="Correo electrónico" placeholder="Correo electrónico"
                   value={clientForm.correo}
                   onChange={(e) => setClientForm({ ...clientForm, correo: e.target.value })}
-                  className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 outline-none focus:border-cyan-400"
+                  className="px-2.5 py-1.5 bg-surface border border-line rounded-lg text-ink placeholder-muted outline-none focus:border-accent"
                 />
                 <input
                   type="text"
                   aria-label="Teléfono" placeholder="Teléfono"
                   value={clientForm.telefono}
                   onChange={(e) => setClientForm({ ...clientForm, telefono: e.target.value })}
-                  className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-neutral-500 outline-none focus:border-cyan-400"
+                  className="px-2.5 py-1.5 bg-surface border border-line rounded-lg text-ink placeholder-muted outline-none focus:border-accent"
                 />
               </div>
             </div>
           </div>
 
           {/* 2. MODALIDAD DE PAGO */}
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
-            <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
+          <div className="p-4 rounded-2xl bg-surface border border-line space-y-3">
+            <label className="text-xs font-bold text-muted uppercase tracking-wider block">
               Modalidad de Venta
             </label>
 
@@ -754,12 +754,12 @@ export default function POSClient({
                 onClick={() => setModalidad("contado")}
                 className={`p-2.5 rounded-xl border text-center font-bold transition-all ${
                   modalidad === "contado"
-                    ? "bg-amber-500/20 border-amber-400 text-amber-300 shadow-md shadow-amber-500/10"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    ? "bg-accent/20 border-accent text-brand shadow-md shadow-accent/10"
+                    : "bg-surface border-line text-muted hover:text-ink"
                 }`}
               >
                 Liquidación Total
-                <span className="block text-[10px] font-normal text-neutral-400 mt-0.5">100% Contado</span>
+                <span className="block text-[10px] font-normal text-muted mt-0.5">100% Contado</span>
               </button>
 
               <button
@@ -767,12 +767,12 @@ export default function POSClient({
                 onClick={() => setModalidad("apartado_10")}
                 className={`p-2.5 rounded-xl border text-center font-bold transition-all ${
                   modalidad === "apartado_10"
-                    ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-md shadow-emerald-500/10"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    ? "bg-emerald-500/20 border-emerald-400 text-brand shadow-md shadow-emerald-500/10"
+                    : "bg-surface border-line text-muted hover:text-ink"
                 }`}
               >
                 Apartado VIP
-                <span className="block text-[10px] font-normal text-neutral-400 mt-0.5">10% Anticipo</span>
+                <span className="block text-[10px] font-normal text-muted mt-0.5">10% Anticipo</span>
               </button>
 
               <button
@@ -780,12 +780,12 @@ export default function POSClient({
                 onClick={() => setModalidad("personalizado")}
                 className={`p-2.5 rounded-xl border text-center font-bold transition-all ${
                   modalidad === "personalizado"
-                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md shadow-cyan-500/10"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    ? "bg-accent/20 border-accent text-brand shadow-md shadow-accent/10"
+                    : "bg-surface border-line text-muted hover:text-ink"
                 }`}
               >
                 Enganche Libre
-                <span className="block text-[10px] font-normal text-neutral-400 mt-0.5">Monto Manual</span>
+                <span className="block text-[10px] font-normal text-muted mt-0.5">Monto Manual</span>
               </button>
             </div>
 
@@ -796,15 +796,15 @@ export default function POSClient({
                   aria-label="Ingrese el monto del anticipo (MXN)" placeholder="Ingrese el monto del anticipo (MXN)"
                   value={montoPersonalizado}
                   onChange={(e) => setMontoPersonalizado(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/15 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-ink outline-none focus:border-accent font-mono"
                 />
               </div>
             )}
           </div>
 
           {/* 3. MÉTODO DE COBRO MULTIMODAL */}
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
-            <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
+          <div className="p-4 rounded-2xl bg-surface border border-line space-y-3">
+            <label className="text-xs font-bold text-muted uppercase tracking-wider block">
               Método de Cobro en Terminal
             </label>
 
@@ -815,8 +815,8 @@ export default function POSClient({
                 onClick={() => setMetodoPago("tarjeta")}
                 className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "tarjeta"
-                    ? "bg-amber-500/20 border-amber-400 text-amber-300"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    ? "bg-accent/20 border-accent text-brand"
+                    : "bg-surface border-line text-muted hover:text-ink"
                 }`}
               >
                 <CreditCard size={18} />
@@ -829,8 +829,8 @@ export default function POSClient({
                 onClick={() => setMetodoPago("contactless")}
                 className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "contactless"
-                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    ? "bg-accent/20 border-accent text-brand"
+                    : "bg-surface border-line text-muted hover:text-ink"
                 }`}
               >
                 <Smartphone size={18} />
@@ -843,8 +843,8 @@ export default function POSClient({
                 onClick={() => setMetodoPago("spei")}
                 className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "spei"
-                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    ? "bg-accent/20 border-accent text-brand"
+                    : "bg-surface border-line text-muted hover:text-ink"
                 }`}
               >
                 <Send size={18} />
@@ -857,8 +857,8 @@ export default function POSClient({
                 onClick={() => setMetodoPago("efectivo")}
                 className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "efectivo"
-                    ? "bg-emerald-500/20 border-emerald-400 text-emerald-300"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    ? "bg-emerald-500/20 border-emerald-400 text-brand"
+                    : "bg-surface border-line text-muted hover:text-ink"
                 }`}
               >
                 <Banknote size={18} />
@@ -872,7 +872,7 @@ export default function POSClient({
                 className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                   metodoPago === "financiamiento"
                     ? "bg-purple-500/20 border-purple-400 text-purple-300"
-                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white"
+                    : "bg-surface border-line text-muted hover:text-ink"
                 }`}
               >
                 <Calendar size={18} />
@@ -881,19 +881,19 @@ export default function POSClient({
             </div>
 
             {metodoPago === "contactless" && (
-              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 space-y-2.5 text-xs">
+              <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 space-y-2.5 text-xs">
                 <div className="flex items-center gap-2">
-                  <Smartphone size={16} className="text-cyan-300" />
-                  <span className="font-bold text-cyan-200">Tap to Pay · modo simulación</span>
+                  <Smartphone size={16} className="text-brand" />
+                  <span className="font-bold text-brand">Tap to Pay · modo simulación</span>
                 </div>
 
                 {contactlessSession ? (
                   <>
-                    <div className="rounded-lg border border-white/10 bg-black/30 p-2.5">
-                      <p className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+                    <div className="rounded-lg border border-line bg-surface p-2.5">
+                      <p className="font-mono text-[10px] uppercase tracking-wider text-brand">
                         {contactlessSession.status === "approved" ? "PAGO APROBADO · VENTA NO REGISTRADA" : "SESIÓN PENDIENTE · ESPERANDO IPHONE"}
                       </p>
-                      <p className="mt-1 break-all text-[11px] text-neutral-300">
+                      <p className="mt-1 break-all text-[11px] text-muted">
                         {contactlessSession.paymentUrl}
                       </p>
                     </div>
@@ -901,16 +901,16 @@ export default function POSClient({
                       href={contactlessSession.paymentUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex min-h-10 items-center justify-center rounded-lg border border-cyan-400/30 bg-cyan-500/15 px-3 py-2 font-bold text-cyan-200 hover:bg-cyan-500/25"
+                      className="inline-flex min-h-10 items-center justify-center rounded-lg border border-accent/30 bg-accent/15 px-3 py-2 font-bold text-brand hover:bg-accent/25"
                     >
                       Abrir simulador de pago
                     </a>
-                    <p className="text-[10px] leading-relaxed text-neutral-400">
+                    <p className="text-[10px] leading-relaxed text-muted">
                       Abra esa dirección en el iPhone. Al tocar “Aprobar pago”, el POS detectará la confirmación y emitirá el recibo automáticamente.
                     </p>
                   </>
                 ) : (
-                  <p className="text-[10px] leading-relaxed text-neutral-400">
+                  <p className="text-[10px] leading-relaxed text-muted">
                     Al registrar la venta se generará una sesión temporal. No se procesa dinero ni se leen tarjetas reales.
                   </p>
                 )}
@@ -920,25 +920,25 @@ export default function POSClient({
             {/* Sub-interfaces depending on payment method */}
             {metodoPago === "efectivo" && (
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-2.5 text-xs">
-                <div className="flex justify-between items-center text-neutral-300">
+                <div className="flex justify-between items-center text-muted">
                   <span>Monto Exacto a Cubrir:</span>
-                  <span className="font-mono font-bold text-white">{formatMXN(totalACobrar)}</span>
+                  <span className="font-mono font-bold text-ink">{formatMXN(totalACobrar)}</span>
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-neutral-400 block mb-1">Efectivo Entregado por Cliente:</label>
+                  <label className="text-[11px] text-muted block mb-1">Efectivo Entregado por Cliente:</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
                       aria-label="0.00" placeholder="0.00"
                       value={efectivoRecibido}
                       onChange={(e) => setEfectivoRecibido(e.target.value)}
-                      className="flex-1 px-3 py-2 bg-black/50 border border-emerald-500/40 rounded-lg text-white font-mono outline-none focus:border-emerald-400"
+                      className="flex-1 px-3 py-2 bg-surface border border-emerald-500/40 rounded-lg text-ink font-mono outline-none focus:border-emerald-400"
                     />
                     <button
                       type="button"
                       onClick={() => setEfectivoRecibido(totalACobrar.toString())}
-                      className="px-3 py-1 rounded-lg bg-emerald-600/30 text-emerald-400 hover:bg-emerald-600/40 border border-emerald-500/30 text-[11px] font-bold"
+                      className="px-3 py-1 rounded-lg bg-emerald-600/30 text-brand hover:bg-emerald-600/40 border border-emerald-500/30 text-[11px] font-bold"
                     >
                       Exacto
                     </button>
@@ -946,8 +946,8 @@ export default function POSClient({
                 </div>
 
                 <div className="pt-2 border-t border-emerald-500/20 flex justify-between items-center">
-                  <span className="font-bold text-neutral-300">Cambio / Vuelto a Devolver:</span>
-                  <span className="font-mono text-sm font-black text-emerald-400">
+                  <span className="font-bold text-muted">Cambio / Vuelto a Devolver:</span>
+                  <span className="font-mono text-sm font-black text-brand">
                     {formatMXN(cambioEfectivo)}
                   </span>
                 </div>
@@ -955,16 +955,16 @@ export default function POSClient({
             )}
 
             {metodoPago === "spei" && (
-              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 space-y-2 text-xs">
+              <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 space-y-2 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-neutral-300">CLABE STP Institucional:</span>
-                  <span className="font-mono text-cyan-300 font-bold">646180157000002026</span>
+                  <span className="text-muted">CLABE STP Institucional:</span>
+                  <span className="font-mono text-brand font-bold">646180157000002026</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-neutral-300">Beneficiario:</span>
-                  <span className="font-bold text-white">LOCADEDCAR MOTORS SA DE CV</span>
+                  <span className="text-muted">Beneficiario:</span>
+                  <span className="font-bold text-ink">LOCADEDCAR MOTORS SA DE CV</span>
                 </div>
-                <p className="text-[10px] text-neutral-400">
+                <p className="text-[10px] text-muted">
                   La transacción se validará con acuse CEP en el folio de venta.
                 </p>
               </div>
@@ -973,7 +973,7 @@ export default function POSClient({
             {metodoPago === "financiamiento" && (
               <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-2.5 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-neutral-300">Plazo Seleccionado:</span>
+                  <span className="text-muted">Plazo Seleccionado:</span>
                   <span className="font-bold text-purple-300">{plazoMeses} Mensualidades</span>
                 </div>
                 <div className="grid grid-cols-4 gap-1.5">
@@ -984,8 +984,8 @@ export default function POSClient({
                       onClick={() => setPlazoMeses(m)}
                       className={`py-1 rounded-lg border text-center font-bold transition-all ${
                         plazoMeses === m
-                          ? "bg-purple-500 text-white border-purple-400"
-                          : "bg-white/5 text-neutral-400 border-white/10"
+                          ? "bg-purple-500 text-ink border-purple-400"
+                          : "bg-surface text-muted border-line"
                       }`}
                     >
                       {m}m
@@ -993,7 +993,7 @@ export default function POSClient({
                   ))}
                 </div>
                 <div className="pt-2 border-t border-purple-500/20 flex justify-between items-center">
-                  <span className="text-neutral-300">Cuota Mensual Proyectada:</span>
+                  <span className="text-muted">Cuota Mensual Proyectada:</span>
                   <span className="font-mono font-bold text-purple-300">
                     {formatMXN(totalACobrar / plazoMeses)} / mes
                   </span>
@@ -1003,28 +1003,28 @@ export default function POSClient({
           </div>
 
           {/* 4. FINANCIAL SUMMARY & EXECUTION BUTTON */}
-          <div className="p-4 rounded-2xl bg-gradient-to-tr from-amber-500/10 via-black to-white/[0.02] border border-amber-500/30 space-y-3 shadow-2xl">
+          <div className="p-4 rounded-2xl bg-gradient-to-tr from-accent via-white/90 to-white/[0.02] border border-accent/30 space-y-3 shadow-2xl">
             <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between text-neutral-400">
+              <div className="flex justify-between text-muted">
                 <span>Subtotal (Base):</span>
                 <span>{formatMXN(totalACobrar / 1.16)}</span>
               </div>
-              <div className="flex justify-between text-neutral-400">
+              <div className="flex justify-between text-muted">
                 <span>IVA Trasladado (16%):</span>
                 <span>{formatMXN(totalACobrar - totalACobrar / 1.16)}</span>
               </div>
-              <div className="pt-2 border-t border-white/10 flex justify-between items-baseline">
-                <span className="text-xs uppercase font-bold tracking-wider text-amber-400">
+              <div className="pt-2 border-t border-line flex justify-between items-baseline">
+                <span className="text-xs uppercase font-bold tracking-wider text-brand">
                   Total a Procesar:
                 </span>
-                <span className="text-2xl font-black text-amber-300 font-mono tracking-tight">
+                <span className="text-2xl font-black text-brand font-mono tracking-tight">
                   {formatMXN(totalACobrar)}
                 </span>
               </div>
             </div>
 
             {errorMsg && (
-              <div role="alert" className="p-2.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-medium">
+              <div role="alert" className="p-2.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-700 text-xs font-medium">
                 ⚠️ {errorMsg}
               </div>
             )}
@@ -1032,7 +1032,7 @@ export default function POSClient({
             <button
               onClick={handleProcessSale}
               disabled={loading || !selectedCar || selectedCar.estado !== "disponible" || (metodoPago === "contactless" && contactlessSession?.status === "pending")}
-              className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-black shadow-lg shadow-amber-500/25 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-accent via-accent to-accent hover:from-accent hover:to-accent text-black shadow-lg shadow-accent/25 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -1075,23 +1075,23 @@ export default function POSClient({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end"
+            className="fixed inset-0 z-50 bg-surface backdrop-blur-sm flex justify-end"
           >
             <motion.div
               initial={{ x: 400 }}
               animate={{ x: 0 }}
               exit={{ x: 400 }}
-              className="w-full max-w-md bg-[#0a0c10] border-l border-white/15 h-full overflow-y-auto p-6 flex flex-col justify-between shadow-2xl"
+              className="w-full max-w-md bg-white border-l border-line h-full overflow-y-auto p-6 flex flex-col justify-between shadow-2xl"
             >
               <div>
-                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                <div className="flex items-center justify-between pb-4 border-b border-line">
                   <div className="flex items-center gap-2">
-                    <TrendingUp size={18} className="text-cyan-400" />
-                    <h3 className="font-bold text-white text-base">Historial de operaciones</h3>
+                    <TrendingUp size={18} className="text-brand" />
+                    <h3 className="font-bold text-ink text-base">Historial de operaciones</h3>
                   </div>
                   <button
                     onClick={() => setShowShiftDrawer(false)}
-                    className="p-1 rounded-full text-neutral-400 hover:text-white"
+                    className="p-1 rounded-full text-muted hover:text-ink"
                   >
                     <X size={18} />
                   </button>

@@ -1,256 +1,30 @@
 "use client";
-
-import { useSessionState } from "@/hooks/useSessionState";
-import { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
+import { useEffect } from "react";
+import { RotateCcw } from "lucide-react";
 import type { Vehiculo } from "@prisma/client";
+import { useSessionState } from "@/hooks/useSessionState";
 import CarCard from "@/components/CarCard";
-
-interface CatalogGridProps {
-  cars: Vehiculo[];
-  requestedBrand?: string;
-  requestedType?: string;
-  resetFilters?: boolean;
-}
-
-export default function CatalogGrid({ cars, requestedBrand, requestedType, resetFilters }: CatalogGridProps) {
-  const brandOptions = useMemo(
-    () => Array.from(new Set(cars.map((car) => car.marca))).sort((a, b) => a.localeCompare(b)),
-    [cars],
-  );
-
-  const typeOptions = useMemo(
-    () =>
-      Array.from(new Set(cars.map((car) => car.tipo.charAt(0).toUpperCase() + car.tipo.slice(1)))).sort((a, b) =>
-        a.localeCompare(b),
-      ),
-    [cars],
-  );
-
-  const [selectedBrands, setSelectedBrands] = useSessionState<string[]>("catalog:brands", []);
-  const [selectedTypes, setSelectedTypes] = useSessionState<string[]>("catalog:types", []);
-  const [isBrandOpen, setIsBrandOpen] = useState(true);
-  const [isTypeOpen, setIsTypeOpen] = useState(true);
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-
-  useEffect(() => {
-    if (resetFilters || requestedBrand || requestedType) {
-      setSelectedBrands(requestedBrand ? [requestedBrand] : []);
-      setSelectedTypes(requestedType ? [requestedType] : []);
-    }
-  }, [requestedBrand, requestedType, resetFilters, setSelectedBrands, setSelectedTypes]);
-
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands((prev) => (prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]));
-  };
-
-  const toggleType = (type: string) => {
-    setSelectedTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]));
-  };
-
-  const filteredCars = useMemo(() => {
-    return cars.filter((car) => {
-      const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(car.marca);
-      const capitalizedCarType = car.tipo.charAt(0).toUpperCase() + car.tipo.slice(1);
-      const matchType = selectedTypes.length === 0 || selectedTypes.includes(capitalizedCarType);
-      return matchBrand && matchType;
-    });
-  }, [cars, selectedBrands, selectedTypes]);
-
-  return (
-    <div className="w-full flex flex-col md:flex-row gap-10 items-start">
-      <aside className="w-full md:w-72 flex-shrink-0 mb-8 md:mb-0">
-        <button
-          type="button"
-          onClick={() => setIsFiltersOpen((open) => !open)}
-          className="md:hidden w-full flex items-center justify-between px-4 py-3 mb-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white"
-          aria-expanded={isFiltersOpen}
-        >
-          <span className="flex items-center gap-2"><SlidersHorizontal size={16} /> Filtrar colección</span>
-          {isFiltersOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-        <div className={`${isFiltersOpen ? "block" : "hidden"} md:block glass rounded-3xl p-5 soft-ring`}>
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-medium text-white">Filtros</h3>
-            <div className="rounded-full bg-white/5 p-2 text-white/70">
-              <SlidersHorizontal size={16} />
-            </div>
-          </div>
-
-          <div className="border-t border-white/10 py-4">
-            <button
-              type="button"
-              onClick={() => setIsBrandOpen((prev) => !prev)}
-              className="w-full flex items-center justify-between text-white/80 hover:text-white transition-colors mb-2"
-            >
-              <span className="font-medium">Marca</span>
-              {isBrandOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-
-            <AnimatePresence>
-              {isBrandOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden flex flex-col gap-3 mt-4"
-                >
-                  {brandOptions.map((brand) => {
-                    const checked = selectedBrands.includes(brand);
-                    return (
-                      <button
-                        key={brand}
-                        type="button"
-                        onClick={() => toggleBrand(brand)}
-                        className={`flex items-center gap-3 cursor-pointer group px-2 py-2 rounded-xl text-left transition-colors ${
-                          checked ? "bg-white/8" : "hover:bg-white/5"
-                        }`}
-                        aria-pressed={checked}
-                      >
-                        <span
-                          className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                            checked ? "bg-white border-white" : "border-white/30 group-hover:border-white/60 bg-transparent"
-                          }`}
-                        >
-                          {checked && (
-                            <motion.svg
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-3 h-3 text-black"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={3}
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </motion.svg>
-                          )}
-                        </span>
-                        <span className="text-white/70 group-hover:text-white transition-colors text-sm">{brand}</span>
-                      </button>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="border-t border-white/10 py-4">
-            <button
-              type="button"
-              onClick={() => setIsTypeOpen((prev) => !prev)}
-              className="w-full flex items-center justify-between text-white/80 hover:text-white transition-colors mb-2"
-            >
-              <span className="font-medium">Carrocerías</span>
-              {isTypeOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-
-            <AnimatePresence>
-              {isTypeOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden flex flex-col gap-3 mt-4"
-                >
-                  {typeOptions.map((type) => {
-                    const checked = selectedTypes.includes(type);
-                    return (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => toggleType(type)}
-                        className={`flex items-center gap-3 cursor-pointer group px-2 py-2 rounded-xl text-left transition-colors ${
-                          checked ? "bg-white/8" : "hover:bg-white/5"
-                        }`}
-                        aria-pressed={checked}
-                      >
-                        <span
-                          className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                            checked ? "bg-white border-white" : "border-white/30 group-hover:border-white/60 bg-transparent"
-                          }`}
-                        >
-                          {checked && (
-                            <motion.svg
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-3 h-3 text-black"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={3}
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </motion.svg>
-                          )}
-                        </span>
-                        <span className="text-white/70 group-hover:text-white transition-colors text-sm">{type}</span>
-                      </button>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {(selectedBrands.length > 0 || selectedTypes.length > 0) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedBrands([]);
-                setSelectedTypes([]);
-              }}
-              className="mt-4 w-full px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              Limpiar filtros
-            </button>
-          )}
-        </div>
-      </aside>
-
-      <div className="flex-1">
-        <div className="flex justify-between items-center mb-6">
-          <p className="text-white/50 text-sm font-medium">{filteredCars.length} modelos</p>
-        </div>
-
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-5 lg:gap-8">
-          <AnimatePresence mode="popLayout">
-            {filteredCars.map((car, index) => (
-              <motion.div
-                key={car.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <CarCard car={car} index={index} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-
-        {filteredCars.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-24 glass rounded-3xl mt-8"
-          >
-            <p className="text-white/50 text-lg">No se encontraron vehículos que coincidan con tu búsqueda.</p>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedBrands([]);
-                setSelectedTypes([]);
-              }}
-              className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-            >
-              Limpiar filtros
-            </button>
-          </motion.div>
-        )}
-      </div>
+interface Props { cars: Vehiculo[]; requestedBrand?: string; requestedType?: string; resetFilters?: boolean; }
+export default function CatalogGrid({cars,requestedBrand,requestedType,resetFilters}: Props) {
+  const [brands,setBrands] = useSessionState<string[]>('catalog:brands',[]);
+  const [types,setTypes] = useSessionState<string[]>('catalog:types',[]);
+  const [status,setStatus] = useSessionState('catalog:status','');
+  const [page,setPage] = useSessionState('catalog:page',1);
+  useEffect(() => { if(resetFilters || requestedBrand || requestedType) {setBrands(requestedBrand ? [requestedBrand] : []);setTypes(requestedType ? [requestedType] : []);setStatus('');setPage(1);} },[resetFilters,requestedBrand,requestedType,setBrands,setTypes,setStatus,setPage]);
+  const filtered=cars.filter(car=>(!brands.length || brands.includes(car.marca)) && (!types.length || types.some(t=>t.toLowerCase()===car.tipo.toLowerCase())) && (!status || car.estado===status));
+  const pages=Math.max(1,Math.ceil(filtered.length/3));
+  const current=Math.min(Math.max(1,page),pages);
+  const reset=()=>{setBrands([]);setTypes([]);setStatus('');setPage(1);};
+  return <section aria-label="Colección de vehículos">
+    <div className="catalog-filters">
+      <label>Marca<select value={brands[0] || ''} onChange={e=>{setBrands(e.target.value ? [e.target.value] : []);setPage(1);}}><option value="">Todas las marcas</option>{Array.from(new Set(cars.map(c=>c.marca))).sort().map(b=><option key={b}>{b}</option>)}</select></label>
+      <label>Carrocería<select value={types[0]?.toLowerCase() || ''} onChange={e=>{setTypes(e.target.value ? [e.target.value] : []);setPage(1);}}><option value="">Todos los modelos</option>{Array.from(new Set(cars.map(c=>c.tipo.toLowerCase()))).sort().map(t=><option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)}</option>)}</select></label>
+      <label>Disponibilidad<select value={status} onChange={e=>{setStatus(e.target.value);setPage(1);}}><option value="">Todos los estados</option>{Array.from(new Set(cars.map(c=>c.estado))).sort().map(s=><option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}</select></label>
+      <button type="button" onClick={reset}><RotateCcw size={17}/>Limpiar</button>
     </div>
-  );
+    <div className="flex justify-between items-center gap-4 mb-5"><h2 className="text-xl">Explora la colección</h2><p role="status" className="text-sm text-muted">{filtered.length} modelos</p></div>
+    <div className="catalog-cards">{filtered.slice((current-1)*3,current*3).map(car=><CarCard key={car.id} car={car}/>)}</div>
+    {filtered.length===0 && <div className="glass rounded-2xl p-10 text-center"><p>No hay vehículos que coincidan con estos filtros.</p><button className="mt-4 underline" onClick={reset}>Ver todos los modelos</button></div>}
+    <nav className="catalog-pagination" aria-label="Páginas del catálogo"><p>{filtered.length ? `${(current-1)*3+1}-${Math.min(current*3,filtered.length)}` : '0'} de {filtered.length}</p><div className="flex gap-2"><button type="button" disabled={current===1} onClick={()=>setPage(current-1)}>← Anterior</button><button type="button" disabled={current===pages} onClick={()=>setPage(current+1)}>Siguiente →</button></div></nav>
+  </section>;
 }

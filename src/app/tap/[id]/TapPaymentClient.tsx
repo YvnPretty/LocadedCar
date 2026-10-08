@@ -82,9 +82,9 @@ export default function TapPaymentClient({ sessionId }: { sessionId: string }) {
     if (session.status === "approved") {
       return (
         <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-5 text-center">
-          <CheckCircle2 className="mx-auto mb-2 text-emerald-400" size={42} />
-          <p className="font-black text-emerald-300">PAGO APROBADO</p>
-          <p className="mt-1 text-sm text-neutral-300">
+          <CheckCircle2 className="mx-auto mb-2 text-brand" size={42} />
+          <p className="font-black text-brand">PAGO APROBADO</p>
+          <p className="mt-1 text-sm text-muted">
             La terminal LocadedCar recibirá la confirmación automáticamente.
           </p>
         </div>
@@ -94,19 +94,19 @@ export default function TapPaymentClient({ sessionId }: { sessionId: string }) {
     if (session.status === "declined") {
       return (
         <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-5 text-center">
-          <XCircle className="mx-auto mb-2 text-red-400" size={42} />
-          <p className="font-black text-red-300">PAGO RECHAZADO</p>
-          <p className="mt-1 text-sm text-neutral-300">La venta no será registrada.</p>
+          <XCircle className="mx-auto mb-2 text-red-700" size={42} />
+          <p className="font-black text-red-700">PAGO RECHAZADO</p>
+          <p className="mt-1 text-sm text-muted">La venta no será registrada.</p>
         </div>
       );
     }
 
     if (session.status === "expired") {
       return (
-        <div className="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-5 text-center">
-          <XCircle className="mx-auto mb-2 text-amber-400" size={42} />
-          <p className="font-black text-amber-300">SESIÓN EXPIRADA</p>
-          <p className="mt-1 text-sm text-neutral-300">
+        <div className="rounded-2xl border border-accent/30 bg-accent/10 p-5 text-center">
+          <XCircle className="mx-auto mb-2 text-brand" size={42} />
+          <p className="font-black text-brand">SESIÓN EXPIRADA</p>
+          <p className="mt-1 text-sm text-muted">
             Regrese al POS y genere una nueva sesión.
           </p>
         </div>
@@ -127,7 +127,7 @@ export default function TapPaymentClient({ sessionId }: { sessionId: string }) {
           type="button"
           disabled={submitting}
           onClick={() => void respond("decline")}
-          className="min-h-14 rounded-2xl border border-red-400/40 bg-red-500/10 px-5 py-4 font-bold text-red-300 transition hover:bg-red-500/20 disabled:opacity-50"
+          className="min-h-14 rounded-2xl border border-red-400/40 bg-red-500/10 px-5 py-4 font-bold text-red-700 transition hover:bg-red-500/20 disabled:opacity-50"
         >
           Rechazar
         </button>
@@ -136,39 +136,39 @@ export default function TapPaymentClient({ sessionId }: { sessionId: string }) {
   };
 
   return (
-    <main className="min-h-screen bg-[#060709] px-4 py-10 text-white">
+    <main className="min-h-screen bg-white px-4 py-10 text-ink">
       <div className="mx-auto w-full max-w-md space-y-5">
         <div className="flex items-center justify-center gap-2 text-sm font-black tracking-widest">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400 text-black">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-black">
             LC
           </span>
-          LOCADED<span className="font-light text-amber-400">TAP</span>
+          LOCADED<span className="font-light text-brand">TAP</span>
         </div>
 
-        <section className="overflow-hidden rounded-3xl border border-white/15 bg-white/[0.04] shadow-2xl">
-          <div className="border-b border-white/10 bg-gradient-to-r from-amber-500/15 to-cyan-500/10 p-5">
+        <section className="overflow-hidden rounded-3xl border border-line bg-surface shadow-2xl">
+          <div className="border-b border-line bg-gradient-to-r from-accent to-accent p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-500/10">
-                <Smartphone className="text-amber-300" size={24} />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-accent/30 bg-accent/10">
+                <Smartphone className="text-brand" size={24} />
               </div>
               <div>
-                <p className="text-xs font-mono uppercase tracking-widest text-neutral-400">
+                <p className="text-xs font-mono uppercase tracking-widest text-muted">
                   Tap to Pay · Simulación
                 </p>
                 <h1 className="text-xl font-black">Pago sin contacto</h1>
               </div>
-              <Radio className="ml-auto animate-pulse text-cyan-400" size={22} />
+              <Radio className="ml-auto animate-pulse text-brand" size={22} />
             </div>
           </div>
 
           <div className="space-y-5 p-5">
             {loading ? (
-              <div className="flex items-center justify-center gap-2 py-10 text-neutral-400">
+              <div className="flex items-center justify-center gap-2 py-10 text-muted">
                 <RefreshCw className="animate-spin" size={18} />
                 Consultando terminal…
               </div>
             ) : error ? (
-              <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-300">
+              <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-700">
                 {error}
                 <button
                   type="button"
@@ -181,19 +181,19 @@ export default function TapPaymentClient({ sessionId }: { sessionId: string }) {
             ) : session ? (
               <>
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-neutral-500">Unidad</p>
-                  <p className="mt-1 font-bold text-neutral-100">{session.vehicle}</p>
+                  <p className="text-xs uppercase tracking-widest text-muted">Unidad</p>
+                  <p className="mt-1 font-bold text-muted">{session.vehicle}</p>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-black/30 p-5 text-center">
-                  <p className="text-xs uppercase tracking-widest text-neutral-500">Monto</p>
-                  <p className="mt-1 text-3xl font-black text-amber-300">
+                <div className="rounded-2xl border border-line bg-surface p-5 text-center">
+                  <p className="text-xs uppercase tracking-widest text-muted">Monto</p>
+                  <p className="mt-1 text-3xl font-black text-brand">
                     {formatMXN(session.amount)}
                   </p>
                 </div>
 
-                <div className="flex items-start gap-2 rounded-xl border border-cyan-400/20 bg-cyan-500/5 p-3 text-xs text-neutral-300">
-                  <ShieldCheck className="mt-0.5 shrink-0 text-cyan-400" size={16} />
+                <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-xs text-muted">
+                  <ShieldCheck className="mt-0.5 shrink-0 text-brand" size={16} />
                   Demo académica: no lee tarjetas, no usa Apple Pay real y no mueve dinero.
                 </div>
 
