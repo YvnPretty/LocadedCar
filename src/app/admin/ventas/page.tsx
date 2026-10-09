@@ -1,3 +1,4 @@
+import { getAdminSession } from '@/lib/admin/access';
 import VehicleImage from "@/components/VehicleImage";
 import { vehicleName } from "@/lib/vehicle-media";
 import React from "react";
@@ -21,6 +22,7 @@ export const dynamic = "force-dynamic";
 const prisma = new PrismaClient();
 
 export default async function AdminVentasPage() {
+ if (!await getAdminSession()) return null;
   const transacciones = await prisma.transaccion.findMany({
     include: {
       vehiculo: {

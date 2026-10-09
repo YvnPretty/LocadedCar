@@ -92,3 +92,24 @@ model ColorVariante {
   vehiculoId   String
   vehiculo     Vehiculo      @relation(fields: [vehiculoId], references: [id], onDelete: Cascade)
 }
+
+model AdminAccount {
+  id           String @id @default(uuid())
+  username     String @unique
+  passwordHash String
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  tokenHash String @id
+  accountId String
+  account AdminAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  @@index([expiresAt])
+}
+
+model AdminLoginLimit {
+  key String @id
+  attempts Int @default(0)
+  resetsAt DateTime
+}

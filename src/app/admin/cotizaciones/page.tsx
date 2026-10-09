@@ -1,3 +1,4 @@
+import { getAdminSession } from '@/lib/admin/access';
 import React from "react";
 import Link from "next/link";
 import { PrismaClient } from "@prisma/client";
@@ -18,6 +19,7 @@ export const dynamic = "force-dynamic";
 const prisma = new PrismaClient();
 
 export default async function AdminCotizacionesPage() {
+ if (!await getAdminSession()) return null;
   const cotizaciones = await prisma.cotizacion.findMany({
     orderBy: { createdAt: "desc" },
     take: 20

@@ -402,3 +402,17 @@ Desarrollado por el equipo de **LocadedCar**:
 - Meza Corella Cesae
 
 Proyecto académico y demostrativo de alta gama para ingeniería de software.
+
+### Acceso de administrador
+
+Las páginas `/admin`, sus subpáginas y las API administrativas verifican una sesión en el servidor antes de consultar datos. Sin sesión se presenta un fondo borroso de muestra, sin datos del negocio. El historial global del POS también requiere sesión administrativa; el cobro del POS conserva su funcionamiento.
+
+Después de preparar la base de datos (`npx prisma db push`), crea una cuenta desde un entorno de confianza:
+
+```sh
+npm run admin:setup -- admin /ruta/privada/acceso-admin.txt
+```
+
+El comando genera una contraseña aleatoria, guarda solo su hash scrypt en la base y escribe las credenciales en un archivo privado (permisos 600). No sobrescribe cuentas ni archivos existentes. Guarda las credenciales en tu gestor y elimina el archivo cuando termines. No lo subas a Git. No existe registro público ni contraseña predeterminada. Ejecuta la configuración en la base de datos de cada instalación; las cuentas locales no se publican con el código.
+
+Las sesiones duran 30 minutos, usan cookies HttpOnly/SameSite Strict y se revocan al cerrar sesión. Producción requiere HTTPS (cookie Secure). Hay un máximo de cinco intentos por ventana de 15 minutos en la entrada administrativa, persistente en la base de datos. No se admiten peticiones de escritura desde otro origen.

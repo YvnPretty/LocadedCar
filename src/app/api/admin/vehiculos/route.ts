@@ -1,3 +1,4 @@
+import { adminApiGuard } from '@/lib/admin/access';
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
@@ -5,6 +6,7 @@ const prisma = new PrismaClient();
 
 // GET: List all vehicles
 export async function GET() {
+  const denied = await adminApiGuard(); if (denied) return denied;
   try {
     const vehiculos = await prisma.vehiculo.findMany({
       include: { colores: true },
@@ -18,6 +20,7 @@ export async function GET() {
 
 // POST: Create or Update vehicle status
 export async function POST(request: Request) {
+  const denied = await adminApiGuard(request); if (denied) return denied;
   try {
     const body = await request.json();
     const { action, id, estado, marca, modelo, anio, precio, tipo, imagenUrl, detalles } = body;

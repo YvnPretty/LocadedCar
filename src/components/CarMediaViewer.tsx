@@ -1,119 +1,48 @@
 "use client";
 
-import VehicleImage from "@/components/VehicleImage";
-import { useSessionState } from "@/hooks/useSessionState";
-import { MouseEvent } from "react";
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
-
-interface DBColor {
-  nombre: string;
-  hex: string;
-  imagenUrl: string;
-}
+import { useState } from 'react';
+import { Check, Palette, RotateCcw } from 'lucide-react';
+import VehicleImage from '@/components/VehicleImage';
+import VehiclePaintPreview from '@/components/VehiclePaintPreview';
+import { useSessionReady, useSessionState } from '@/hooks/useSessionState';
+import { getVehicleColors, paintFinishes, type PaintFinish, type VehicleColor } from '@/lib/vehicle-colors';
+import { resolveVehicleImage } from '@/lib/vehicle-media';
+import { vehiclePaintMasks } from '@/lib/vehicle-paint';
 
 interface CarMediaViewerProps {
-  imageUrl: string;
-  brand: string;
-  model: string;
-  status: string;
-  dbColors?: DBColor[];
+  vehicleId: string; imageUrl: string; brand: string; model: string; status: string; dbColors?: VehicleColor[];
 }
 
-export default function CarMediaViewer({ imageUrl, brand, model, status, dbColors = [] }: CarMediaViewerProps) {
-  // Si hay colores en DB, usamos el primero como default. Si no, usamos null.
-  const [selectedColorName, setSelectedColorName] = useSessionState(`vehicle:${brand}:${model}:color`, dbColors[0]?.nombre || "");
-  const selectedDBColor = dbColors.find(color => color.nombre === selectedColorName) ?? dbColors[0] ?? null;
+export default function CarMediaViewer({ vehicleId, imageUrl, brand, model, status, dbColors = [] }: CarMediaViewerProps) {
+  const ready = useSessionReady();
+  const car = { marca: brand, modelo: model, imagenUrl: imageUrl };
+  const colors = getVehicleColors(car, dbColors);
+  const [selectedName, setSelectedName] = useSessionState(`vehicle:${vehicleId}:color`, '');
+  const [savedFinish, setFinish] = useSessionState<PaintFinish>(`vehicle:${vehicleId}:finish`, 'gloss');
+  const finish = paintFinishes.some(item => item.id === savedFinish) ? savedFinish : 'gloss';
+  const [showOriginal, setShowOriginal] = useState(false);
+  const selected = colors.find(color => color.nombre === selectedName);
+  const src = resolveVehicleImage(car, selected?.imagenUrl || imageUrl);
+  const canPreview = !!src && !!vehiclePaintMasks[src];
+  const preview = canPreview && !!selected && !showOriginal;
 
-  // Framer motion Parallax / Tilt effect variables
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
-
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-
-    const mouseX = (e.clientX - rect.left) / width - 0.5;
-    const mouseY = (e.clientY - rect.top) / height - 0.5;
-
-    x.set(mouseX);
-    y.set(mouseY);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  const currentImage = selectedDBColor ? selectedDBColor.imagenUrl : imageUrl;
-
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Visualizador Principal Interactivo */}
-      <div
-        className="relative aspect-video rounded-3xl overflow-hidden glass shadow-2xl cursor-crosshair bg-surface"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{ perspective: 1000 }}
-      >
-        <motion.div
-          style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-          className="w-full h-full relative"
-        >
-          {/* AnimatePresence for smooth crossfades between images */}
-          <AnimatePresence mode="wait">
-            <motion.div key={currentImage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0">
-              <VehicleImage eager car={{ marca: brand, modelo: model, imagenUrl: imageUrl }} src={currentImage} className="h-full w-full" showCredit />
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Brillo dinámico superpuesto para más realismo */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none mix-blend-overlay" />
-        </motion.div>
-
-        {/* Etiqueta de Estado */}
-        <div className="absolute top-4 right-4 pointer-events-none z-10">
-          <span className={`px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md shadow-lg ${
-            status === 'disponible' ? 'bg-green-500/20 text-brand border border-green-500/30' : 'bg-red-500/20 text-red-700 border border-red-500/30'
-          }`}>
-            {status.toUpperCase()}
-          </span>
-        </div>
+  return <section className="vehicle-configurator" aria-label="Imágenes y pintura del vehículo">
+    <div className="vehicle-stage">
+      <div className="vehicle-stage-bar"><span><span className={`status-dot ${status === 'disponible' ? 'is-available' : ''}`}/>{status}</span><span>{preview ? 'Vista previa de pintura' : 'Fotografía del modelo'}</span></div>
+      <div className="vehicle-stage-image">
+        {preview ? <VehiclePaintPreview src={src!} name={`${brand} ${model}`} color={selected.hex} colorName={selected.nombre} finish={finish}/> : <VehicleImage car={car} src={showOriginal ? imageUrl : src} className="h-full w-full" showCredit eager/>}
       </div>
-
-      {/* Selector de Colores Integrado (Solo se muestra si el auto tiene variaciones de color en DB) */}
-      {dbColors.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 glass-panel p-5 rounded-2xl">
-          <span className="text-sm text-muted tracking-wide uppercase font-medium">
-            Configuración: <span className="text-ink ml-2">{selectedDBColor?.nombre}</span>
-          </span>
-          <div className="flex flex-wrap justify-center gap-4">
-            {dbColors.map((color) => (
-              <button
-                key={color.nombre}
-                onClick={() => setSelectedColorName(color.nombre)}
-                className={`w-10 h-10 rounded-full border-2 transition-all duration-300 ease-out ${
-                  selectedDBColor?.nombre === color.nombre
-                    ? 'border-line scale-110 shadow-[0_0_20px_rgba(255,255,255,0.4)]'
-                    : 'border-line hover:scale-110 hover:border-line opacity-70 hover:opacity-100'
-                }`}
-                style={{
-                  backgroundColor: color.hex,
-                  background: color.hex.toLowerCase() === '#ffffff' ? 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)' : color.hex
-                }}
-                aria-label={color.nombre}
-                aria-pressed={selectedDBColor?.nombre === color.nombre}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="vehicle-stage-footer"><span>{brand} <strong>{model}</strong></span>{selected && <button type="button" aria-pressed={showOriginal} onClick={() => setShowOriginal(!showOriginal)}>{showOriginal ? 'Ver selección' : 'Comparar con original'}</button>}</div>
     </div>
-  );
+    {colors.length > 0 ? <div className="paint-panel">
+      <div className="paint-heading"><div><p className="eyebrow"><Palette size={14}/> Personaliza tu estilo</p><h2 aria-live="polite">{selected?.nombre ?? 'Color original'}</h2></div>{selected && <button type="button" className="paint-reset" aria-label="Restablecer pintura original" onClick={() => { setSelectedName(''); setFinish('gloss'); setShowOriginal(false); }}><RotateCcw size={16}/></button>}</div>
+      <div className="paint-colors" role="group" aria-label="Color de carrocería">
+        {colors.map(color => <button type="button" disabled={!ready} key={color.nombre} aria-pressed={selected?.nombre === color.nombre} onClick={() => { setSelectedName(color.nombre); setShowOriginal(false); }} className="paint-option">
+          <span className="paint-swatch" style={{ backgroundColor: color.hex }}>{selected?.nombre === color.nombre && <Check size={16} className="paint-check"/>}</span><span>{color.nombre}</span>
+        </button>)}
+      </div>
+      {canPreview && <fieldset className="paint-finishes"><legend>Acabado de pintura</legend><div>{paintFinishes.map(item => <button key={item.id} type="button" disabled={!selected} aria-pressed={finish === item.id} onClick={() => { setFinish(item.id); setShowOriginal(false); }}>{item.label}</button>)}</div></fieldset>}
+      <p className="paint-note">{canPreview ? 'Simulación visual sobre una foto de referencia. Confirma los colores y acabados disponibles con un asesor.' : 'Consulta la disponibilidad del color con un asesor.'}</p>
+    </div> : <p className="paint-note">Consulta con un asesor los colores disponibles para esta unidad.</p>}
+  </section>;
 }

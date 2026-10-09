@@ -1,9 +1,11 @@
+import { adminApiGuard } from '@/lib/admin/access';
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 
 
 export async function GET() {
+  const denied = await adminApiGuard(); if (denied) return denied;
   try {
     const transacciones = await prisma.transaccion.findMany({
       include: {

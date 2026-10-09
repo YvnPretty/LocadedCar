@@ -1,11 +1,11 @@
 import { vehicleName } from "@/lib/vehicle-media";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Gauge, Settings2, CheckCircle2, CreditCard } from "lucide-react";
 import Link from "next/link";
 import CarMediaViewer from "@/components/CarMediaViewer";
 
-const prisma = new PrismaClient();
+
 
 // Disable caching for params
 export const dynamic = 'force-dynamic';
@@ -23,16 +23,18 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
   }
 
   return (
-    <main className="min-h-screen pt-10 pb-24">
-      <div className="max-w-6xl mx-auto px-6">
+    <main className="vehicle-detail min-h-screen pt-8 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
         <Link href="/catalogo" className="inline-flex items-center gap-2 text-muted hover:text-ink transition-colors mb-8">
           <ArrowLeft size={20} />
           <span>Volver al catálogo</span>
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 lg:gap-12 items-start">
           {/* Columna Izquierda: Imagen / Visor Interactivo */}
-          <CarMediaViewer 
+          <CarMediaViewer
+            key={car.id}
+            vehicleId={car.id}
             imageUrl={car.imagenUrl || ""}
             brand={car.marca}
             model={car.modelo}
@@ -41,16 +43,17 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
           />
 
           {/* Columna Derecha: Detalles */}
-          <div className="flex flex-col justify-center">
-            <h1 className="text-5xl font-light tracking-tight text-ink mb-2">
+          <div className="vehicle-detail-copy flex flex-col">
+            <p className="eyebrow mb-3">{car.marca} · {car.tipo}</p>
+            <h1 className="text-3xl sm:text-4xl xl:text-5xl font-light tracking-tight text-ink mb-2">
               {vehicleName(car)}
             </h1>
             
-            <p className="text-4xl font-light text-ink my-6">
-              {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(car.precio)}
+            <p className="text-3xl font-light text-ink my-6">
+              {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(car.precio)}
             </p>
 
-            <div className="flex gap-4 mb-8">
+            <div className="grid grid-cols-2 gap-3 mb-8">
               <div className="glass-panel px-4 py-3 rounded-2xl flex items-center gap-3">
                 <Gauge className="text-muted" />
                 <div>
@@ -74,14 +77,14 @@ export default async function DetalleVehiculo({ params }: { params: Promise<{ id
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+            <div className="flex flex-col gap-3 mt-2">
               {car.estado === "disponible" ? (
                 <Link 
                   href={`/checkout?vehiculoId=${car.id}`} 
-                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-accent to-accent hover:from-accent hover:to-accent text-ink font-semibold flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(239,68,68,0.4)] transition-all duration-300 text-center"
+                  className="vehicle-primary-action"
                 >
                   <CreditCard size={18} />
-                  Proceder al Pago / Apartar
+                  Apartar vehículo
                 </Link>
               ) : (
                 <button 

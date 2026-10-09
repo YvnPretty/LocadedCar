@@ -1,3 +1,4 @@
+import { getAdminSession } from '@/lib/admin/access';
 import React from "react";
 import Link from "next/link";
 import { PrismaClient } from "@prisma/client";
@@ -19,6 +20,7 @@ export const dynamic = "force-dynamic";
 const prisma = new PrismaClient();
 
 export default async function AdminClientesPage() {
+ if (!await getAdminSession()) return null;
   const clientes = await prisma.cliente.findMany({
     include: {
       transacciones: {

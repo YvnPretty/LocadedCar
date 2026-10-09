@@ -9,7 +9,7 @@ export default function SalesSummary() {
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/pos/stats', { signal: controller.signal, cache: 'no-store' })
-      .then(async res => { if (!res.ok) throw new Error('No se pudo consultar el historial.'); return res.json(); })
+      .then(async res => { if (res.status === 401) throw new Error('El historial de ventas requiere acceso de administrador. Ingresa desde Admin.'); if (!res.ok) throw new Error('No se pudo consultar el historial.'); return res.json(); })
       .then(setData).catch(err => { if (!controller.signal.aborted) setError(err.message); });
     return () => controller.abort();
   }, [attempt]);

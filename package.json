@@ -10,6 +10,7 @@
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "test": "node --import tsx --test src/lib/*.test.ts src/lib/pos/*.test.ts tests/*.test.mjs",
+    "admin:setup": "tsx scripts/setup-admin.ts",
     "images:prepare": "node scripts/prepare-vehicle-images.mjs",
     "predev": "npm run images:prepare"
   },

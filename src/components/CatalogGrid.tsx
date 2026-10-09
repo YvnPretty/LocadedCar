@@ -22,7 +22,7 @@ export default function CatalogGrid({cars,requestedBrand,requestedType,resetFilt
       <label>Disponibilidad<select value={status} onChange={e=>{setStatus(e.target.value);setPage(1);}}><option value="">Todos los estados</option>{Array.from(new Set(cars.map(c=>c.estado))).sort().map(s=><option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}</select></label>
       <button type="button" onClick={reset}><RotateCcw size={17}/>Limpiar</button>
     </div>
-    <div className="flex justify-between items-center gap-4 mb-5"><h2 className="text-xl">Explora la colección</h2><p role="status" className="text-sm text-muted">{filtered.length} modelos</p></div>
+    <div className="flex justify-between items-center gap-4 mb-5"><h2 className="text-xl">Explora la colección</h2><p role="status" className="text-sm text-muted">{filtered.length} {filtered.length === 1 ? "modelo" : "modelos"}</p></div>
     <div className="catalog-cards">{filtered.slice((current-1)*3,current*3).map(car=><CarCard key={car.id} car={car}/>)}</div>
     {filtered.length===0 && <div className="glass rounded-2xl p-10 text-center"><p>No hay vehículos que coincidan con estos filtros.</p><button className="mt-4 underline" onClick={reset}>Ver todos los modelos</button></div>}
     <nav className="catalog-pagination" aria-label="Páginas del catálogo"><p>{filtered.length ? `${(current-1)*3+1}-${Math.min(current*3,filtered.length)}` : '0'} de {filtered.length}</p><div className="flex gap-2"><button type="button" disabled={current===1} onClick={()=>setPage(current-1)}>← Anterior</button><button type="button" disabled={current===pages} onClick={()=>setPage(current+1)}>Siguiente →</button></div></nav>
