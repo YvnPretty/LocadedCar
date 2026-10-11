@@ -1,19 +1,23 @@
 @import "tailwindcss";
 :root {
- --background:#f5f4ee; --foreground:#1a2d23;
+ --background:#e5eadf; --foreground:#1a2d23;
  --glass-fill:#f7f8f3; --glass-chrome:#f8f9f5; --glass-border:rgba(255,255,255,.8);
- --glass-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 8px 30px rgba(32,53,39,.055);
+ --glass-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(255,255,255,.18),0 10px 32px rgba(32,53,39,.09);
  --glass-blur:12px;
 }
 @theme inline {
   --color-background:var(--background); --color-foreground:var(--foreground);
-  --color-brand:#1a2d23; --color-ink:#24362c; --color-muted:#647066;
+  --color-brand:#1a2d23; --color-ink:#24362c; --color-muted:#4f6154;
   --color-accent:#d7f18b; --color-surface:#eef0e7; --color-line:#dce0d5;
   --font-sans:Arial,Helvetica,sans-serif;
 }
 html { scroll-behavior:smooth; color-scheme:light; }
 body {
- background:radial-gradient(ellipse 85% 650px at 0 0,#dfe9d6aa,transparent),radial-gradient(ellipse 60% 800px at 100% 700px,#dce8df99,transparent),var(--background);
+ background:
+  radial-gradient(ellipse 65% 520px at 4% 180px,#adccb9 0%,transparent 75%),
+  radial-gradient(ellipse 70% 650px at 96% 820px,#a5c8bb 0%,transparent 75%),
+  radial-gradient(ellipse 65% 560px at 8% 1150px,#d1dda5 0%,transparent 78%),
+  linear-gradient(125deg,#e5eadf,#e8e9dd 50%,#dce8df);
  color:var(--foreground); font-family:Arial,Helvetica,sans-serif;
 }
 ::selection { background:#d7f18b; color:#1a2d23; }
@@ -168,11 +172,12 @@ input::placeholder,textarea::placeholder { color:#687467; }
 }
 .site-header {
  background:var(--glass-chrome);
- border-bottom:1px solid var(--glass-border);
- box-shadow:0 4px 24px #20352706;
+ border:1px solid var(--glass-border);
+ box-shadow:var(--glass-shadow);
+ top:12px; width:calc(100% - 32px); max-width:1376px; margin:12px auto 0; border-radius:20px;
 }
 .collection-hero {
- background:linear-gradient(125deg,rgba(255,255,255,.06),transparent 65%),#20392f;
+ background:linear-gradient(125deg,rgba(255,255,255,.10),transparent 65%),rgba(24,51,39,.9);
  border:1px solid #ffffff70;
  box-shadow:inset 0 1px 0 #ffffff24,0 14px 38px #20352712;
 }
@@ -202,7 +207,7 @@ input::placeholder,textarea::placeholder { color:#687467; }
 .catalog-filters select,.glass input,.glass select,.glass textarea,
 .glass-panel input,.glass-panel select,.glass-panel textarea,.admin-access-card input,
 .pos-screen input,.pos-screen select,.pos-screen textarea {
- background:#fbfcf8e8; border-color:#74856c59;
+ background:rgba(251,252,248,.58); border-color:#667d626e;
 }
 select option { background:#fafbf7; color:#24362c; }
 input:focus-visible,select:focus-visible,textarea:focus-visible {
@@ -211,15 +216,15 @@ input:focus-visible,select:focus-visible,textarea:focus-visible {
 .paint-finishes > div { background:#e7eddfa6; }
 .paint-option[aria-pressed=true] { background:#e6efd9; border-color:#6e8557; }
 .paint-finishes button[aria-pressed=true] { background:#fffffff2; }
-.site-footer { background:#ffffff38; border-top-color:#ffffffb3; }
+ .site-footer { background:#ffffff26; border-top-color:#ffffffb3; }
 .pos-screen { background:transparent; }
 .pos-screen > header { background:var(--glass-chrome); }
 .workflow-glass { background:var(--glass-chrome); border-color:#ffffffb3; }
 
 @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
- :root { --glass-fill:rgba(255,255,255,.6); --glass-chrome:rgba(249,251,245,.86); }
+ :root { --glass-fill:rgba(255,255,255,.24); --glass-chrome:rgba(249,251,245,.62); }
  .site-header,.glass,.glass-panel,.iphone-shell,.collection-card,.catalog-filters,
- .paint-panel,.vehicle-stage,.admin-access-card,.pos-screen > header,.workflow-glass {
+ .paint-panel,.vehicle-stage,.admin-access-card,.pos-screen > header,.workflow-glass,.collection-hero {
   -webkit-backdrop-filter:blur(var(--glass-blur)); backdrop-filter:blur(var(--glass-blur));
  }
  .hero-tag,.car-status { -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
@@ -243,6 +248,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible {
 }
 @media(max-width:767px) {
  :root { --glass-blur:8px; }
+ .site-header { top:8px; margin-top:8px; width:calc(100% - 16px); border-radius:16px; }
+ .site-nav { padding-inline:14px; }
  .site-links { padding-bottom:4px; }
  .site-links a.nav-buy { margin-left:0; }
  .collection-card,.catalog-filters,.paint-panel { border-radius:18px; }
@@ -251,6 +258,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible {
  .catalog-pagination button { min-height:44px; }
  .vehicle-stage-bar { flex-wrap:wrap; }
 }
+.car-copy .car-meta,.catalog-pagination,.vehicle-stage-bar,.vehicle-stage-footer,.paint-note,.site-footer { color:#4f6154; }
+.glass input:focus,.glass textarea:focus,.catalog-filters select:focus { background:rgba(251,252,248,.88); }
 @media(max-width:380px) {
  .catalog-filters { grid-template-columns:minmax(0,1fr); }
  .hero-copy h1 { font-size:32px; overflow-wrap:break-word; }
