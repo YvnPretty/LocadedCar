@@ -447,7 +447,7 @@ export default function POSClient({
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 overflow-hidden">
         
         {/* === LEFT PANE: SHOWROOM & VEHICLE SELECTOR (7 Cols) === */}
-        <div className="xl:col-span-7 flex flex-col border-r border-line bg-white backdrop-blur-md overflow-hidden">
+        <div className="pos-panel xl:col-span-7 flex flex-col border-r border-line bg-white backdrop-blur-md overflow-hidden">
           
           {/* Search & Category Filter Controls */}
           <div className="p-4 border-b border-line space-y-3">
@@ -628,7 +628,7 @@ export default function POSClient({
         </div>
 
         {/* === RIGHT PANE: COCKPIT DE DESPACHO & COBRO (5 Cols) === */}
-        <div className="xl:col-span-5 flex flex-col bg-white overflow-y-auto xl:max-h-[calc(100dvh-50px)] p-4 md:p-6 space-y-4">
+        <div className="pos-panel xl:col-span-5 flex flex-col bg-white overflow-y-auto xl:max-h-[calc(100dvh-50px)] p-4 md:p-6 space-y-4">
           
           {/* Active Unit Header Card */}
           {selectedCar ? (

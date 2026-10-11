@@ -1,5 +1,10 @@
 @import "tailwindcss";
-:root { --background:#f5f4ee; --foreground:#1a2d23; }
+:root {
+ --background:#f5f4ee; --foreground:#1a2d23;
+ --glass-fill:#f7f8f3; --glass-chrome:#f8f9f5; --glass-border:rgba(255,255,255,.8);
+ --glass-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 8px 30px rgba(32,53,39,.055);
+ --glass-blur:12px;
+}
 @theme inline {
   --color-background:var(--background); --color-foreground:var(--foreground);
   --color-brand:#1a2d23; --color-ink:#24362c; --color-muted:#647066;
@@ -7,7 +12,10 @@
   --font-sans:Arial,Helvetica,sans-serif;
 }
 html { scroll-behavior:smooth; color-scheme:light; }
-body { background:var(--background); color:var(--foreground); font-family:Arial,Helvetica,sans-serif; }
+body {
+ background:radial-gradient(ellipse 85% 650px at 0 0,#dfe9d6aa,transparent),radial-gradient(ellipse 60% 800px at 100% 700px,#dce8df99,transparent),var(--background);
+ color:var(--foreground); font-family:Arial,Helvetica,sans-serif;
+}
 ::selection { background:#d7f18b; color:#1a2d23; }
 button,a,input,select,textarea { -webkit-tap-highlight-color:transparent; }
 button:not(:disabled),select { cursor:pointer; }
@@ -150,3 +158,109 @@ input::placeholder,textarea::placeholder { color:#687467; }
 .admin-session-bar { max-width:1440px; margin:auto; padding:20px 32px 0; display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; color:#647066; font-size:12px; }
 .admin-session-bar button { display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #dce0d5; padding:10px 14px; border-radius:10px; color:#24362c; }
 @media(max-width:600px) { .admin-locked { min-height:700px; padding:28px 16px; } .admin-access-card { padding:28px 24px; } .admin-locked-preview { grid-template-columns:1fr; } .admin-locked-preview aside { display:none; } .admin-session-bar { padding:20px 16px 0; } }
+
+/* Quiet glass: opaque fallback first; blur only on bounded surface areas. */
+.glass,.glass-panel,.iphone-shell,.collection-card,.catalog-filters,
+.paint-panel,.vehicle-stage,.admin-access-card,.pos-panel {
+ background:var(--glass-fill);
+ border:1px solid var(--glass-border);
+ box-shadow:var(--glass-shadow);
+}
+.site-header {
+ background:var(--glass-chrome);
+ border-bottom:1px solid var(--glass-border);
+ box-shadow:0 4px 24px #20352706;
+}
+.collection-hero {
+ background:linear-gradient(125deg,rgba(255,255,255,.06),transparent 65%),#20392f;
+ border:1px solid #ffffff70;
+ box-shadow:inset 0 1px 0 #ffffff24,0 14px 38px #20352712;
+}
+.hero-summary { background:#ffffff08; border-top-color:#ffffff26; }
+.hero-summary small { color:#d1dcc9; }
+.hero-tag,.car-status {
+ background:var(--glass-chrome);
+ border:1px solid #ffffffb3;
+ box-shadow:0 2px 10px #172c2310;
+}
+.hero-image .hero-tag { background:var(--glass-chrome); }
+.car-copy .car-bottom { border-color:#24362c14; }
+.glass-button,.catalog-pagination button,.admin-session-bar button {
+ background:var(--glass-fill); border-color:#70866b40;
+ box-shadow:inset 0 1px 0 #ffffffb3;
+}
+.site-links a,.glass-button,.hero-action,.vehicle-primary-action,
+.catalog-pagination button,.paint-option,.paint-finishes button {
+ transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.site-links a[aria-current=page],.site-links a:hover,.glass-button:hover {
+ background:#e3ebdca6;
+}
+.site-links a.nav-buy { background:#20392f; color:#e3f5b7; }
+.car-copy .car-bottom a { background:#e7eddfa6; min-height:44px; }
+.catalog-filters label { color:#526151; min-width:0; }
+.catalog-filters select,.glass input,.glass select,.glass textarea,
+.glass-panel input,.glass-panel select,.glass-panel textarea,.admin-access-card input,
+.pos-screen input,.pos-screen select,.pos-screen textarea {
+ background:#fbfcf8e8; border-color:#74856c59;
+}
+select option { background:#fafbf7; color:#24362c; }
+input:focus-visible,select:focus-visible,textarea:focus-visible {
+ outline:2px solid #56752d; outline-offset:3px;
+}
+.paint-finishes > div { background:#e7eddfa6; }
+.paint-option[aria-pressed=true] { background:#e6efd9; border-color:#6e8557; }
+.paint-finishes button[aria-pressed=true] { background:#fffffff2; }
+.site-footer { background:#ffffff38; border-top-color:#ffffffb3; }
+.pos-screen { background:transparent; }
+.pos-screen > header { background:var(--glass-chrome); }
+.workflow-glass { background:var(--glass-chrome); border-color:#ffffffb3; }
+
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+ :root { --glass-fill:rgba(255,255,255,.6); --glass-chrome:rgba(249,251,245,.86); }
+ .site-header,.glass,.glass-panel,.iphone-shell,.collection-card,.catalog-filters,
+ .paint-panel,.vehicle-stage,.admin-access-card,.pos-screen > header,.workflow-glass {
+  -webkit-backdrop-filter:blur(var(--glass-blur)); backdrop-filter:blur(var(--glass-blur));
+ }
+ .hero-tag,.car-status { -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+ /* No stacked blur on nested cards or long POS lists. */
+ .glass .glass,.glass-panel .glass,.pos-panel .glass {
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+ }
+}
+@media(hover:hover) and (pointer:fine) {
+ .collection-card:hover { transform:translateY(-2px); box-shadow:inset 0 1px 0 #fff,0 14px 30px #20352712; }
+ .hero-action:hover { box-shadow:0 4px 18px #d7f18b26; }
+}
+@media(hover:none) { .collection-card:hover { transform:none; box-shadow:var(--glass-shadow); } }
+/* Keep navigation usable on narrow tablets as well as phones. */
+@media(max-width:1023px) {
+ .site-nav { min-height:68px; flex-wrap:wrap; gap:0; }
+ .mobile-toggle { display:grid; place-items:center; min-width:44px; min-height:44px; border-radius:12px; background:#ffffff66; }
+ .site-links { display:none; width:100%; padding-top:12px; flex-wrap:wrap; }
+ .site-links.is-open { display:flex; }
+ .site-links a { min-height:44px; display:inline-flex; align-items:center; }
+}
+@media(max-width:767px) {
+ :root { --glass-blur:8px; }
+ .site-links { padding-bottom:4px; }
+ .site-links a.nav-buy { margin-left:0; }
+ .collection-card,.catalog-filters,.paint-panel { border-radius:18px; }
+ .catalog-filters select,.glass input,.glass select,.glass textarea,.admin-access-card input { font-size:16px; }
+ .catalog-pagination { flex-wrap:wrap; align-items:center; }
+ .catalog-pagination button { min-height:44px; }
+ .vehicle-stage-bar { flex-wrap:wrap; }
+}
+@media(max-width:380px) {
+ .catalog-filters { grid-template-columns:minmax(0,1fr); }
+ .hero-copy h1 { font-size:32px; overflow-wrap:break-word; }
+ .hero-action { padding:12px; font-size:14px; }
+ .admin-access-card { padding:24px 18px; }
+}
+@media(prefers-reduced-transparency:reduce) {
+ :root { --glass-fill:#f7f8f3; --glass-chrome:#f8f9f5; --glass-blur:0px; }
+ .hero-tag,.car-status,.admin-locked::before { -webkit-backdrop-filter:none; backdrop-filter:none; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .collection-card:hover { transform:none; }
+}
