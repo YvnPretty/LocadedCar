@@ -41,5 +41,22 @@ test('admin credentials, throttling, session expiration, forgery and logout', as
     assert.equal(isSameOrigin(new Request('https://cars.test/api/admin/session', { headers: { origin: 'https://evil.test' } })), false);
     assert.equal(isSameOrigin(new Request('https://cars.test/api/admin/session')), false);
     assert.equal(isSameOrigin(new Request('https://cars.test/api/admin/session', { headers: { origin: 'https://cars.test' } })), true);
+    // Restore the private initial account on an empty Railway database.
+    const oldUser = process.env.ADMIN_USERNAME;
+    const oldHash = process.env.ADMIN_PASSWORD_HASH;
+    try {
+      process.env.ADMIN_USERNAME = 'bootstrap-admin';
+      process.env.ADMIN_PASSWORD_HASH = hash;
+      assert.equal((await loginAdmin('bootstrap-admin', password)).status, 200);
+      // Configuration must never overwrite an existing account's password.
+      process.env.ADMIN_PASSWORD_HASH = await hashPassword('different-password');
+      assert.equal((await loginAdmin('bootstrap-admin', password)).status, 200);
+    } finally {
+      if (oldUser === undefined) delete process.env.ADMIN_USERNAME;
+      else process.env.ADMIN_USERNAME = oldUser;
+      if (oldHash === undefined) delete process.env.ADMIN_PASSWORD_HASH;
+      else process.env.ADMIN_PASSWORD_HASH = oldHash;
+    }
+
   } finally { await prisma.$disconnect(); rmSync(directory, { recursive: true, force: true }); }
 });

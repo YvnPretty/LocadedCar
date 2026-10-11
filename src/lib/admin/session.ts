@@ -24,6 +24,13 @@ export async function loginAdmin(username: string, password: string, previousTok
     });
   });
   if (limit.attempts > 5) return { status: 429 as const, error: 'Demasiados intentos. Intenta nuevamente en 15 minutos.' };
+  // Railway can recreate its SQLite file on redeploy. Keep the initial admin hash
+  // in private service variables, never in the repository or browser bundle.
+  const bootstrapUsername = process.env.ADMIN_USERNAME?.trim().toLowerCase();
+  const bootstrapHash = process.env.ADMIN_PASSWORD_HASH;
+  if (bootstrapUsername && /^[a-z0-9._-]{3,64}$/.test(bootstrapUsername) && bootstrapHash && /^scrypt-v1\$[a-f0-9]{32}\$[a-f0-9]{128}$/.test(bootstrapHash)) {
+    await prisma.adminAccount.upsert({ where: { username: bootstrapUsername }, update: {}, create: { username: bootstrapUsername, passwordHash: bootstrapHash } });
+  }
   const account = await prisma.adminAccount.findUnique({ where: { username: username.trim().toLowerCase() } });
   const valid = await verifyPassword(password, account?.passwordHash ?? dummyHash);
   if (!valid || !account) return { status: 401 as const, error: 'Usuario o contraseña incorrectos.' };
@@ -38,9 +45,14 @@ export async function loginAdmin(username: string, password: string, previousTok
 }
 export function isSameOrigin(request: Request) {
   const origin = request.headers.get('origin');
+  if (!origin || request.headers.get('sec-fetch-site') === 'cross-site') return false;
+  // Railway terminates HTTPS before forwarding to Next over HTTP. Use the
+  // service's trusted public domain, never a caller-supplied forwarded host.
+  const publicDomain = process.env.RAILWAY_PUBLIC_DOMAIN?.trim();
+  if (publicDomain) return origin === `https://${publicDomain}`;
   const expected = new URL(request.url);
-  // Next's internal URL can use localhost while the browser uses 127.0.0.1.
+  // Preserve local development via localhost or 127.0.0.1, including the port.
   const host = request.headers.get('host');
   if (host) expected.host = host;
-  return !!origin && origin === expected.origin && request.headers.get('sec-fetch-site') !== 'cross-site';
+  return origin === expected.origin;
 }

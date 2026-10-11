@@ -416,3 +416,7 @@ npm run admin:setup -- admin /ruta/privada/acceso-admin.txt
 El comando genera una contraseña aleatoria, guarda solo su hash scrypt en la base y escribe las credenciales en un archivo privado (permisos 600). No sobrescribe cuentas ni archivos existentes. Guarda las credenciales en tu gestor y elimina el archivo cuando termines. No lo subas a Git. No existe registro público ni contraseña predeterminada. Ejecuta la configuración en la base de datos de cada instalación; las cuentas locales no se publican con el código.
 
 Las sesiones duran 30 minutos, usan cookies HttpOnly/SameSite Strict y se revocan al cerrar sesión. Producción requiere HTTPS (cookie Secure). Hay un máximo de cinco intentos por ventana de 15 minutos en la entrada administrativa, persistente en la base de datos. No se admiten peticiones de escritura desde otro origen.
+
+En Railway, las variables privadas `ADMIN_USERNAME` y `ADMIN_PASSWORD_HASH` permiten restaurar la cuenta inicial si el archivo SQLite se recrea durante un despliegue. Usa el hash scrypt de la cuenta configurada, nunca la contraseña en texto plano. La restauración no reemplaza cuentas existentes. Esto conserva el acceso administrativo, pero los datos de negocio necesitan almacenamiento persistente para sobrevivir a los despliegues.
+
+En Railway, la validación de origen usa `RAILWAY_PUBLIC_DOMAIN` para comparar con la URL pública HTTPS aunque Next reciba HTTP interno. No se confía en encabezados de origen reenviados por el cliente.
