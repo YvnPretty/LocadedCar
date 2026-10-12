@@ -3,7 +3,9 @@
 import { useSessionState, clearSessionDraft } from "@/hooks/useSessionState";
 import ResumeLink from "@/components/ResumeLink";
 import VehicleImage from "@/components/VehicleImage";
-import { vehicleName } from "@/lib/vehicle-media";
+import VehiclePaintPreview from "@/components/VehiclePaintPreview";
+import { vehiclePaintMasks } from "@/lib/vehicle-paint";
+import { resolveVehicleImage, vehicleName } from "@/lib/vehicle-media";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,7 +76,13 @@ export default function POSClient({
   const [selectedCarId, setSelectedCarId] = useSessionState<string | null>("pos:vehicle", null);
   const selectedCar = cars.find(car => car.id === selectedCarId) ?? null;
   const setSelectedCar = (car: Vehiculo | null) => setSelectedCarId(car?.id ?? null);
-  const [selectedColor, setSelectedColor] = useSessionState<ColorVariante | null>("pos:color", null);
+  const [savedColor, setSelectedColor] = useSessionState<ColorVariante | null>("pos:color", null);
+
+  const selectedColor = selectedCar?.colores.find(color => color.id === savedColor?.id) ?? selectedCar?.colores[0] ?? null;
+  const selectVehicle = (car: Vehiculo) => {
+    if (car.id !== selectedCarId) setSelectedColor(car.colores[0] ?? null);
+    setSelectedCar(car);
+  };
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useSessionState("pos:search", "");
@@ -519,6 +527,7 @@ export default function POSClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {filteredCars.map((car) => {
                 const isSelected = selectedCar?.id === car.id;
+                const previewSrc = resolveVehicleImage(car, isSelected ? selectedColor?.imagenUrl : undefined);
                 const isAvailable = car.estado === "disponible";
 
                 return (
@@ -526,11 +535,10 @@ export default function POSClient({
                     key={car.id}
                     layoutId={`car-card-${car.id}`}
                     role="button" tabIndex={0} aria-label={`Seleccionar ${vehicleName(car)}`} aria-pressed={isSelected}
-                    onKeyDown={e => { if (e.target !== e.currentTarget || loading) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedCar(car); setSelectedColor(car.colores[0] ?? null); } }}
+                    onKeyDown={e => { if (e.target !== e.currentTarget || loading) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectVehicle(car); } }}
                     onClick={() => {
                       if (loading) return;
-                      setSelectedCar(car);
-                      setSelectedColor(car.colores[0] ?? null);
+                      selectVehicle(car);
                     }}
                     className={`group relative p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
@@ -556,7 +564,7 @@ export default function POSClient({
 
                     {/* Image Preview */}
                     <div className="relative w-full h-36 rounded-xl overflow-hidden bg-surface mb-3 border border-line">
-                      <VehicleImage car={car} src={isSelected ? selectedColor?.imagenUrl : undefined} className="w-full h-full  group-hover:scale-105 transition-transform duration-500" showCredit />
+                      {isSelected && selectedColor && previewSrc && vehiclePaintMasks[previewSrc] ? <VehiclePaintPreview src={previewSrc} name={vehicleName(car)} color={selectedColor.hex} colorName={selectedColor.nombre} finish="gloss" /> : <VehicleImage car={car} src={isSelected ? selectedColor?.imagenUrl : undefined} className="w-full h-full  group-hover:scale-105 transition-transform duration-500" showCredit />}
                       <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent"></div>
                       
                       {/* Brand and Model Overlay */}
@@ -574,20 +582,21 @@ export default function POSClient({
 
                     {/* Color variants selector inside card if available */}
                     {car.colores && car.colores.length > 0 && (
-                      <div className="flex items-center gap-1.5 mb-2.5">
+                      <div className="flex flex-wrap items-center gap-2 mb-2.5">
                         <span className="text-[10px] text-muted">Variantes:</span>
-                        <div className="flex items-center gap-1">
+                        <div className="flex flex-wrap items-center gap-2">
                           {car.colores.map((c) => (
                             <button
                               key={c.id}
+                              type="button" disabled={loading}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (loading) return;
-                      setSelectedCar(car);
+                                setSelectedCar(car);
                                 setSelectedColor(c);
                               }}
                               aria-label={`Color ${c.nombre}`} aria-pressed={isSelected && selectedColor?.id === c.id}
-                              className={`w-10 h-10 rounded-full border transition-all ${
+                              className={`w-11 h-11 shrink-0 rounded-full border transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
                                 isSelected && selectedColor?.id === c.id
                                   ? "border-accent scale-125 ring-2 ring-accent/30"
                                   : "border-line hover:scale-110"
@@ -663,7 +672,7 @@ export default function POSClient({
                       className="w-3 h-3 rounded-full border border-line"
                       style={{ backgroundColor: selectedColor.hex }}
                     ></span>
-                    Configuración: <strong className="text-ink">{selectedColor.nombre}</strong>
+                    Configuración: <strong className="text-ink" aria-live="polite">{selectedColor.nombre}</strong>
                   </span>
                   <span className="text-[11px] text-brand font-mono font-medium">Fotomappeo Listo</span>
                 </div>
