@@ -333,3 +333,6 @@ input:focus-visible,select:focus-visible,textarea:focus-visible {
 }
 @media(max-width:600px) { .mega-content { grid-template-columns:1fr; padding:18px; gap:22px; } .mega-feature { display:none; } .mega-brands { gap:0 16px; } }
 @media(prefers-reduced-motion:reduce) { .mega-panel,.nav-backdrop { transition:none; transform:none; } }
+
+/* Let the dropdown sample the page rather than its filtered parent. */
+.site-header[data-menu-open=true] { -webkit-backdrop-filter:none; backdrop-filter:none; }
