@@ -8,16 +8,16 @@
 @theme inline {
   --color-background:var(--background); --color-foreground:var(--foreground);
   --color-brand:#1a2d23; --color-ink:#24362c; --color-muted:#4f6154;
-  --color-accent:#d7f18b; --color-surface:#eef0e7; --color-line:#dce0d5;
+  --color-accent:#c6e7b0; --color-surface:#e8efea; --color-line:#cad9d0;
   --font-sans:Arial,Helvetica,sans-serif;
 }
 html { scroll-behavior:smooth; color-scheme:light; }
 body {
  background:
-  radial-gradient(ellipse 65% 520px at 4% 180px,#adccb9 0%,transparent 75%),
-  radial-gradient(ellipse 70% 650px at 96% 820px,#a5c8bb 0%,transparent 75%),
-  radial-gradient(ellipse 65% 560px at 8% 1150px,#d1dda5 0%,transparent 78%),
-  linear-gradient(125deg,#e5eadf,#e8e9dd 50%,#dce8df);
+  radial-gradient(ellipse 65% 520px at 4% 180px,#95c4b5 0%,transparent 75%),
+  radial-gradient(ellipse 70% 650px at 96% 820px,#a4c8d0 0%,transparent 75%),
+  radial-gradient(ellipse 65% 560px at 8% 1150px,#d7d9b8 0%,transparent 78%),
+  linear-gradient(125deg,#e3eee7,#f0ede3 50%,#dbe8e8);
  color:var(--foreground); font-family:Arial,Helvetica,sans-serif;
 }
 ::selection { background:#d7f18b; color:#1a2d23; }
@@ -30,7 +30,7 @@ input::placeholder,textarea::placeholder { color:#687467; }
 .glass-button { background:#fff; border:1px solid #dce0d5; transition:background .18s; }
 .glass-button:hover { background:#eef0e7; }
 .soft-ring { box-shadow:0 0 0 1px #dce0d5; }
-.site-header { background:#fff; border-bottom:1px solid #dce0d5; position:sticky; top:0; z-index:50; }
+.site-header { background:#fff; border-bottom:1px solid #dce0d5; position:relative; top:0; z-index:50; }
 .site-nav { max-width:1440px; margin:auto; min-height:82px; padding:16px 32px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
 .site-logo { display:flex; align-items:center; gap:9px; font-size:23px; letter-spacing:-1px; }
 .site-logo-icon { padding:8px; border-radius:9px; background:#1a2d23; color:#d7f18b; }
@@ -174,7 +174,7 @@ input::placeholder,textarea::placeholder { color:#687467; }
  background:var(--glass-chrome);
  border:1px solid var(--glass-border);
  box-shadow:var(--glass-shadow);
- top:12px; width:calc(100% - 32px); max-width:1376px; margin:12px auto 0; border-radius:20px;
+ top:0; width:calc(100% - 32px); max-width:1376px; margin:12px auto 0; border-radius:20px;
 }
 .collection-hero {
  background:linear-gradient(125deg,rgba(255,255,255,.10),transparent 65%),rgba(24,51,39,.9);
@@ -248,7 +248,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible {
 }
 @media(max-width:767px) {
  :root { --glass-blur:8px; }
- .site-header { top:8px; margin-top:8px; width:calc(100% - 16px); border-radius:16px; }
+ .site-header { top:0; margin-top:8px; width:calc(100% - 16px); border-radius:16px; }
  .site-nav { padding-inline:14px; }
  .site-links { padding-bottom:4px; }
  .site-links a.nav-buy { margin-left:0; }
@@ -336,3 +336,21 @@ input:focus-visible,select:focus-visible,textarea:focus-visible {
 
 /* Let the dropdown sample the page rather than its filtered parent. */
 .site-header[data-menu-open=true] { -webkit-backdrop-filter:none; backdrop-filter:none; }
+
+/* Mineral green, warm ivory and restrained mint accents. */
+.site-logo-icon { background:linear-gradient(145deg,#274d43,#142e28); box-shadow:inset 0 1px 0 #ffffff30,0 3px 9px #142e2818; }
+.site-links a.nav-buy { background:linear-gradient(135deg,#284d42,#18372f); color:#eff9e8; box-shadow:inset 0 1px 0 #ffffff26,0 3px 10px #18372f18; }
+.collection-card { border-radius:22px; }
+.car-copy { padding:22px; }
+.car-copy .car-meta { color:#426459; font-weight:600; }
+.car-copy h3 { letter-spacing:-.65px; }
+.car-copy .car-bottom { padding-top:16px; border-top:1px solid #34554a20; }
+.car-copy .car-bottom a { background:#d2e7dc80; border:1px solid #ffffff90; border-radius:12px; padding:8px 12px; }
+.catalog-filters { border-radius:20px; }
+.pos-screen > header { position:relative; top:auto; }
+.pos-vehicle-card { background:linear-gradient(135deg,#ffffff45,#e3eee524); border-color:#ffffffad; }
+.pos-vehicle-card[data-selected=true] { background:linear-gradient(135deg,#a9d5c17a,#e9f3dc40); border-color:#537f6d; box-shadow:inset 0 1px 0 #ffffffb3,0 8px 24px #1d51431a; }
+.pos-panel { border-radius:24px; box-shadow:inset 0 1px 0 #ffffffcc,0 12px 36px #24483c0d; }
+.pos-screen input,.pos-screen select,.pos-screen textarea { border-color:#6e928275; box-shadow:inset 0 1px 2px #264b3d08; }
+.pos-screen :focus-visible { outline-color:#356952; }
+@media(max-width:767px) { .car-copy { padding:18px; } .pos-panel { border-radius:18px; } }

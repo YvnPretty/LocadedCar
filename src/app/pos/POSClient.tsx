@@ -534,13 +534,14 @@ export default function POSClient({
                   <motion.div
                     key={car.id}
                     layoutId={`car-card-${car.id}`}
+                    data-selected={isSelected}
                     role="button" tabIndex={0} aria-label={`Seleccionar ${vehicleName(car)}`} aria-pressed={isSelected}
                     onKeyDown={e => { if (e.target !== e.currentTarget || loading) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectVehicle(car); } }}
                     onClick={() => {
                       if (loading) return;
                       selectVehicle(car);
                     }}
-                    className={`group relative p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`pos-vehicle-card group relative p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
                         ? "bg-gradient-to-b from-accent to-transparent border-accent/60 shadow-xl shadow-accent/10"
                         : "bg-surface hover:bg-surface border-line"

@@ -22,6 +22,17 @@ export default function Navbar() {
   const closeAll = () => { cancelClose(); setActive(null); setMobileOpen(false); };
   useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); }, []);
 
+  useEffect(() => {
+    const dismissOnPageScroll = () => {
+      if (window.scrollY < 100) return;
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+      setActive(null);
+      setMobileOpen(false);
+    };
+    window.addEventListener("scroll", dismissOnPageScroll, { passive: true });
+    return () => window.removeEventListener("scroll", dismissOnPageScroll);
+  }, []);
+
   const menus: { id: MenuId; label: string }[] = [
     { id: "catalogo", label: "Catálogo" }, { id: "nosotros", label: "Nosotros" },
   ];
