@@ -304,7 +304,7 @@ export default function POSClient({
 
         contactlessPayload.current = { ...payload, contactlessSessionId: sessionData.data.id };
         contactlessCompleting.current = false;
-        setContactlessSession(sessionData.data);
+        setContactlessSession({ ...sessionData.data, paymentUrl: new URL(`/tap/${sessionData.data.id}`, window.location.origin).href });
         return;
       }
 
@@ -843,7 +843,7 @@ export default function POSClient({
                 }`}
               >
                 <Smartphone size={18} />
-                <span className="text-[11px] font-medium">Tap iPhone</span>
+                <span className="text-[11px] font-medium">Pago demo</span>
               </button>
 
               <button
@@ -893,7 +893,7 @@ export default function POSClient({
               <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 space-y-2.5 text-xs">
                 <div className="flex items-center gap-2">
                   <Smartphone size={16} className="text-brand" />
-                  <span className="font-bold text-brand">Tap to Pay · modo simulación</span>
+                  <span className="font-bold text-brand">Pago sin contacto · simulación, sin cobro real</span>
                 </div>
 
                 {contactlessSession ? (
@@ -915,12 +915,12 @@ export default function POSClient({
                       Abrir simulador de pago
                     </a>
                     <p className="text-[10px] leading-relaxed text-muted">
-                      Abra esa dirección en el iPhone. Al tocar “Aprobar pago”, el POS detectará la confirmación y emitirá el recibo automáticamente.
+                      Abra el simulador aquí o copie la dirección en su iPhone. Mantenga abierto el POS: al aprobar la simulación se registrará una venta de demostración. No abre Apple Wallet ni lee tarjetas.
                     </p>
                   </>
                 ) : (
                   <p className="text-[10px] leading-relaxed text-muted">
-                    Al registrar la venta se generará una sesión temporal. No se procesa dinero ni se leen tarjetas reales.
+                    Complete los datos del comprador y pulse “Iniciar simulación de pago”. Después abra el enlace generado. No se procesa dinero ni se leen tarjetas reales.
                   </p>
                 )}
               </div>
@@ -1053,6 +1053,8 @@ export default function POSClient({
                   <Smartphone size={18} />
                   Esperando confirmación en iPhone…
                 </>
+              ) : metodoPago === "contactless" ? (
+                <><Smartphone size={18} />Iniciar simulación de pago</>
               ) : selectedCar && selectedCar.estado !== "disponible" ? (
                 "Unidad Vendida / No Disponible"
               ) : (

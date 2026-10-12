@@ -3,20 +3,6 @@ import { createContactlessSession } from "@/lib/contactless-sim";
 
 export const runtime = "nodejs";
 
-function publicBaseUrl(request: Request) {
-  const configured = process.env.CONTACTLESS_PUBLIC_BASE_URL?.trim().replace(/\/+$/, "");
-  if (configured) {
-    try {
-      const parsed = new URL(configured);
-      if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.origin;
-    } catch {
-      // Fall back to the request origin when the demo URL is malformed.
-    }
-  }
-
-  return new URL(request.url).origin;
-}
-
 export async function POST(request: Request) {
   try {
     let body: { amount?: unknown; vehicle?: unknown; vehicleId?: unknown };
@@ -41,13 +27,12 @@ export async function POST(request: Request) {
     }
 
     const session = createContactlessSession(amount, vehicle, vehicleId);
-    const baseUrl = publicBaseUrl(request);
 
     return NextResponse.json({
       success: true,
       data: {
         ...session,
-        paymentUrl: `${baseUrl}/tap/${session.id}`,
+        paymentUrl: `/tap/${session.id}`,
       },
     });
   } catch (error) {

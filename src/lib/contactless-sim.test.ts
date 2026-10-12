@@ -42,4 +42,7 @@ test('session endpoint rejects malformed JSON and invalid amounts', async () => 
   const {data} = await response.json();
   assert.equal(data.vehicleId, 'car-1');
   assert.equal(data.status, 'pending');
+  // Reverse proxies expose an internal request origin; links must stay on the public site.
+  assert.equal(new URL(data.paymentUrl, 'https://shop.example').origin, 'https://shop.example');
+  assert.equal(new URL(data.paymentUrl, 'https://shop.example').pathname, `/tap/${data.id}`);
 });
