@@ -1,3 +1,4 @@
+import { expandCatalog } from './expand-catalog'
 import { ensureVehicleColors } from './ensure-vehicle-colors'
 import { repairVehicleImages } from './repair-vehicle-images'
 import { PrismaClient } from '@prisma/client'
@@ -9,16 +10,12 @@ async function main() {
   const existingVehicles = await prisma.vehiculo.count()
 
   if (existingVehicles > 0) {
+    await expandCatalog(prisma)
     await ensureVehicleColors(prisma)
-    console.log(`Database already contains ${existingVehicles} vehicles; skipping seed.`)
+    console.log(`Database already contains ${existingVehicles} vehicles; added missing catalog models.`)
     return
   }
 
-  await prisma.colorVariante.deleteMany()
-  await prisma.transaccion.deleteMany()
-  await prisma.vehiculo.deleteMany()
-  await prisma.cliente.deleteMany()
-  await prisma.vendedor.deleteMany()
 
   console.log('Seeding database with premium sports cars...')
 
@@ -132,6 +129,7 @@ async function main() {
 
   await repairVehicleImages(prisma)
   await ensureVehicleColors(prisma)
+  await expandCatalog(prisma)
   console.log('Seeded database with cars and color variants!')
 }
 

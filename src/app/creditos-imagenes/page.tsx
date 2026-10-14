@@ -7,7 +7,7 @@ export default function ImageCredits() {
       <h2 className="font-semibold">{item.identity}</h2>
       <p>Autor: {item.author} · Wikimedia Commons</p>
       <a className="underline" href={`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(item.source)}`}>Fotografía original</a>{' · '}
-      <a className="underline" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+      <a className="underline" href={'licenseUrl' in item ? item.licenseUrl : "https://creativecommons.org/licenses/by-sa/4.0/"}>{'license' in item ? item.license : 'CC BY-SA 4.0'}</a>
       <p className="text-sm text-muted">Copia de la imagen de referencia a resolución reducida; sin modificar el vehículo.</p>
     </li>)}</ul>
   </main>;
