@@ -105,14 +105,14 @@ export default function POSTicketModal({ isOpen, onClose, ticket }: POSTicketMod
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-surface backdrop-blur-md overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-black/25 backdrop-blur-md overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           role="dialog" aria-modal="true" aria-label="Recibo de operación"
-          className="relative w-full max-w-xl my-8 bg-white border border-line rounded-3xl p-6 md:p-8 shadow-2xl text-ink"
+          className="relative w-full max-w-xl my-8 bg-white/95 backdrop-blur-2xl border border-white/80 rounded-3xl p-6 md:p-8 shadow-2xl text-ink"
         >
           {/* Action Header */}
           <div className="flex items-center justify-between pb-4 border-b border-line print:hidden">

@@ -84,10 +84,8 @@ input::placeholder,textarea::placeholder { color:#687467; }
 .admin-workspace aside nav { display:flex; flex-direction:column; gap:10px; }
 .admin-workspace aside nav a { display:flex; align-items:center; gap:12px; padding:14px; border-radius:10px; font-size:14px; }
 .admin-workspace aside nav a[aria-current=page] { background:#1a2d23; color:#d7f18b; }
-.pos-screen { background:#f5f4ee; }
 .pos-screen header { position:static; }
 .pos-screen .font-mono { font-family:Arial,Helvetica,sans-serif; }
-.pos-screen input,.pos-screen select,.pos-screen textarea { background:#fff; }
 @media(max-width:767px) { .admin-workspace { grid-template-columns:1fr; gap:22px; padding:20px 16px; } .admin-workspace aside nav { flex-direction:row; flex-wrap:wrap; gap:4px; } .admin-workspace aside nav a { padding:10px; font-size:12px; } .admin-workspace aside nav a:last-child { margin-top:0; border:0; } }
 
 /* Collection and vehicle detail share the same quiet, editorial palette. */

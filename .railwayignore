@@ -1,0 +1,10 @@
+node_modules
+.next
+tmp
+output
+docs
+LocadedCar
+vendor
+composer.json
+composer.lock
+tests
