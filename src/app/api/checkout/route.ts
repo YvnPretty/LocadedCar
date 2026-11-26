@@ -75,6 +75,10 @@ export async function POST(request: Request) {
       const transaccion = await tx.transaccion.create({
         data: {
           montoTotal: monto,
+          colorNombre: color?.nombre,
+          colorHex: color?.hex,
+          modalidad,
+          metodoPago,
           vehiculoId: vehiculo.id,
           clienteId: cliente.id,
           vendedorId: vendedor.id
