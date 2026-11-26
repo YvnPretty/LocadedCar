@@ -1,7 +1,10 @@
 "use client";
 
 import VehicleImage from "@/components/VehicleImage";
-import { vehicleName } from "@/lib/vehicle-media";
+import { vehicleName, resolveVehicleImage } from "@/lib/vehicle-media";
+import VehiclePaintPreview from "@/components/VehiclePaintPreview";
+import { getVehicleColors, paintFinishes, type PaintFinish } from "@/lib/vehicle-colors";
+import { vehiclePaintMasks } from "@/lib/vehicle-paint";
 import { useSessionState, clearSessionDraft, useSessionReady } from "@/hooks/useSessionState";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -33,13 +36,17 @@ export default function CheckoutClient({
   initialCar?: VehiculoConColores;
 }) {
   const [selectedCarId, setSelectedCarId] = useSessionState("checkout:vehicle", "");
-  const selectedCar = cars.find(car => car.id === selectedCarId) || (!selectedCarId ? initialCar || cars.find(car => car.estado === "disponible") : undefined);
+  const [completedCar, setCompletedCar] = useState<VehiculoConColores | null>(null);
+  const selectedCar = completedCar || cars.find(car => car.id === selectedCarId && car.estado === "disponible") || (initialCar?.estado === "disponible" ? initialCar : cars.find(car => car.estado === "disponible"));
   const setSelectedCar = (car: VehiculoConColores) => { setSelectedCarId(car.id); setStep(1); };
   const requestedApplied = useRef(false);
   const sessionReady = useSessionReady();
-  const [selectedColor, setSelectedColor] = useSessionState<string>(`vehicle:${selectedCar?.marca}:${selectedCar?.modelo}:color`,
-    selectedCar?.colores?.[0]?.nombre || "Original de Fábrica"
-  );
+  const [selectedColor, setSelectedColor] = useSessionState<string>(`vehicle:${selectedCar?.id}:color`, "");
+  const [savedFinish] = useSessionState<PaintFinish>(`vehicle:${selectedCar?.id}:finish`, "gloss");
+  const finish = paintFinishes.some(item => item.id === savedFinish) ? savedFinish : "gloss";
+  const colors = selectedCar ? getVehicleColors(selectedCar, selectedCar.colores) : [];
+  const color = colors.find(item => item.nombre === selectedColor);
+  const previewSrc = selectedCar ? resolveVehicleImage(selectedCar, color?.imagenUrl) : null;
   
   // Modalidad: "total" (100%) o "apartado" (10% para apartar el chasis)
   const [modalidad, setModalidad] = useSessionState<"total" | "apartado">("checkout:mode", "total");
@@ -75,15 +82,16 @@ export default function CheckoutClient({
 
   // Estados de proceso y éxito
   const [isProcessing, setIsProcessing] = useState(false);
+  const processing = useRef(false);
   const [receiptData, setReceiptData] = useState<{ transaccionId: string; fecha: string; vehiculo: { marca: string; modelo: string; anio: number; color?: { nombre: string; hex: string } | null }; cliente: { nombre: string }; modalidad: string; metodoPago: string; montoTotal: number } | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (!sessionReady || requestedApplied.current) return;
     requestedApplied.current = true;
-    if (initialCar && initialCar.id !== selectedCarId) {
+    if (initialCar?.estado === "disponible" && initialCar.id !== selectedCarId) {
       setSelectedCarId(initialCar.id); setStep(1);
-    } else if (!selectedCarId && selectedCar) setSelectedCarId(selectedCar.id);
+    } else if (selectedCar && selectedCarId !== selectedCar.id) { setSelectedCarId(selectedCar.id); setStep(1); }
   }, [sessionReady, initialCar, selectedCarId, selectedCar, setSelectedCarId, setStep, setSelectedColor]);
 
   if (!selectedCar) {
@@ -126,17 +134,19 @@ export default function CheckoutClient({
 
   // Enviar pago al backend
   const handleFinalizarPago = async () => {
-    if (isProcessing) return;
+    if (processing.current) return;
     if (!canProceedStep1) { setStep(1); setErrorMessage("Complete los datos del comprador."); return; }
     if (!canProceedStep2) { setStep(2); setErrorMessage("Revise el método de pago. Los datos de tarjeta no se guardan al salir."); return; }
     if (selectedCar.estado !== "disponible") { setErrorMessage("Esta unidad ya no está disponible. Seleccione otra."); return; }
+    processing.current = true;
     setIsProcessing(true);
     setErrorMessage("");
 
     try {
       const payload = {
         vehiculoId: selectedCar.id,
-        colorVarianteId: selectedCar.colores?.find(color => color.nombre === selectedColor)?.id,
+        colorVarianteId: selectedCar.colores?.find(item => item.nombre === color?.nombre)?.id,
+        colorNombre: color?.nombre,
         nombre: formData.nombre,
         correo: formData.correo,
         telefono: formData.telefono,
@@ -157,16 +167,18 @@ export default function CheckoutClient({
 
       const data = await res.json();
 
-      if (!res.ok) {
+      if (!res.ok || !data.success || !data.transaccionId) {
         throw new Error(data.error || "Ocurrió un error al procesar el pago.");
       }
 
+      setCompletedCar(selectedCar);
       setReceiptData(data);
       clearSessionDraft("checkout");
       setCardData({ numero: "", titular: "", expira: "", cvv: "" });
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "No se pudo completar la transacción. Verifica tus datos.");
     } finally {
+      processing.current = false;
       setIsProcessing(false);
     }
   };
@@ -467,6 +479,7 @@ export default function CheckoutClient({
                     </div>
 
                     <div className="space-y-4 pt-2">
+                      <button type="button" onClick={() => setCardData({ numero: "4242 4242 4242 4242", titular: "TITULAR DE PRUEBA", expira: "12/30", cvv: "123" })} className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm font-medium">Usar tarjeta de prueba</button>
                       <div>
                         <label className="block text-xs font-medium text-muted mb-1.5">Número de Tarjeta</label>
                         <input
@@ -529,13 +542,13 @@ export default function CheckoutClient({
                       <h4 className="font-semibold text-ink">Transferencia Electrónica Directa (SPEI VIP)</h4>
                     </div>
                     <p className="text-xs text-muted leading-relaxed">
-                      Al confirmar tu orden, se generará una referencia única de rastreo con validación instantánea vía Banxico. No aplican comisiones por transacción.
+                      Simulación de transferencia: no envíes dinero. La confirmación solo registra una operación de demostración.
                     </p>
 
                     <div className="space-y-2 bg-surface p-4 rounded-xl text-xs font-mono">
                       <div className="flex justify-between">
                         <span className="text-muted">Banco Destino:</span>
-                        <span className="text-ink font-bold">STP / BBVA Bancomer</span>
+                        <span className="text-ink font-bold">Banco de demostración</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted">Beneficiario:</span>
@@ -543,7 +556,7 @@ export default function CheckoutClient({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted">CLABE Interbancaria:</span>
-                        <span className="text-brand font-bold">6461 8015 7000 9988 22</span>
+                        <span className="text-brand font-bold">NO APLICA · SIMULACIÓN</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted">Concepto / Referencia:</span>
@@ -704,7 +717,7 @@ export default function CheckoutClient({
                     ) : (
                       <>
                         <Lock size={18} />
-                        <span>Confirmar y Pagar {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(montoAPagar)}</span>
+                        <span>Confirmar compra de prueba {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(montoAPagar)}</span>
                       </>
                     )}
                   </button>
@@ -730,7 +743,7 @@ export default function CheckoutClient({
 
               {/* Imagen */}
               <div className="relative aspect-video rounded-2xl overflow-hidden mb-4 border border-line">
-                <VehicleImage car={selectedCar} src={selectedCar.colores?.find(color => color.nombre === selectedColor)?.imagenUrl} className="w-full h-full " showCredit />
+                {color && previewSrc && vehiclePaintMasks[previewSrc] ? <VehiclePaintPreview src={previewSrc} name={vehicleName(selectedCar)} color={color.hex} colorName={color.nombre} finish={finish}/> : <VehicleImage car={selectedCar} src={previewSrc} className="w-full h-full" showCredit />}
                 <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent"></div>
                 <div className="absolute bottom-3 left-3">
                   <p className="text-xs text-muted font-mono uppercase">{selectedCar.marca}</p>
@@ -743,6 +756,7 @@ export default function CheckoutClient({
                 <label className="block text-[11px] font-medium text-muted mb-1">Cambiar vehículo seleccionado:</label>
                 <select
                   value={selectedCar.id}
+                  disabled={isProcessing}
                   onChange={(e) => {
                     const found = cars.find(c => c.id === e.target.value);
                     if (found) {
@@ -751,7 +765,7 @@ export default function CheckoutClient({
                   }}
                   className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-xs text-ink focus:outline-none focus:border-red-500"
                 >
-                  {cars.map((c) => (
+                  {cars.filter(c => c.estado === "disponible").map((c) => (
                     <option key={c.id} value={c.id} className="bg-white text-ink">
                       {c.marca} {c.modelo} ({c.anio}) - {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(c.precio)}
                     </option>
@@ -760,18 +774,20 @@ export default function CheckoutClient({
               </div>
 
               {/* Selector de color si tiene variantes */}
-              {selectedCar.colores && selectedCar.colores.length > 0 && (
+              {colors.length > 0 && (
                 <div className="mb-6 pt-2 border-t border-line">
                   <p className="text-[11px] text-muted mb-2">Variante de Color Elegida:</p>
-                  <div className="flex gap-2">
-                    {selectedCar.colores.map((col) => (
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" disabled={isProcessing} aria-pressed={!color} onClick={() => setSelectedColor("")} className="rounded-full border border-line px-3 py-1 text-xs">Original</button>
+                    {colors.map((col) => (
                       <button
-                        key={col.id}
+                        key={col.nombre}
                         type="button"
+                        disabled={isProcessing}
                         onClick={() => setSelectedColor(col.nombre)}
                         aria-pressed={selectedColor === col.nombre}
                         className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs transition-all ${
-                          selectedColor === col.nombre ? "border-line bg-surface text-ink font-medium" : "border-line bg-surface text-muted"
+                          selectedColor === col.nombre ? "border-accent ring-2 ring-accent bg-surface text-ink font-medium" : "border-line bg-surface text-muted"
                         }`}
                       >
                         <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: col.hex }}></span>
@@ -853,11 +869,11 @@ export default function CheckoutClient({
 
               <div className="text-center mb-6">
                 <span className="text-xs uppercase tracking-widest text-brand font-semibold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                  ¡Transacción Exitosa!
+                  ¡Compra de prueba registrada!
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-bold mt-3">Comprobante de Adquisición</h2>
                 <p className="text-muted text-xs mt-1">
-                  Tu solicitud ha sido procesada y el chasis ha quedado reservado a tu nombre.
+                  La operación fue registrada en el sistema. No se realizó ningún cargo bancario.
                 </p>
               </div>
 
@@ -889,7 +905,7 @@ export default function CheckoutClient({
                   <span>{receiptData.metodoPago}</span>
                 </div>
                 <div className="pt-2 border-t border-line flex justify-between items-baseline text-sm font-sans">
-                  <span className="font-semibold text-ink">Monto Liquidado:</span>
+                  <span className="font-semibold text-ink">Monto registrado (simulado):</span>
                   <span className="text-xl font-bold text-brand">
                     {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(receiptData.montoTotal)}
                   </span>
@@ -900,7 +916,7 @@ export default function CheckoutClient({
               <div className="bg-accent/10 border border-accent/20 rounded-2xl p-4 mb-6 flex items-start gap-3 text-xs text-brand">
                 <BadgeCheck size={20} className="flex-shrink-0 text-brand mt-0.5" />
                 <p>
-                  Un asesor de nuestro equipo <strong>Concierge VIP</strong> se pondrá en contacto contigo vía WhatsApp o llamada en los próximos 15 minutos para coordinar la entrega o firma de documentación.
+                  Este comprobante es de demostración y no constituye un contrato de compraventa ni acredita un pago real.
                 </p>
               </div>
 
