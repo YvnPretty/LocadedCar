@@ -128,8 +128,8 @@ async function main() {
   })
 
   await repairVehicleImages(prisma)
-  await ensureVehicleColors(prisma)
   await expandCatalog(prisma)
+  await ensureVehicleColors(prisma)
   console.log('Seeded database with cars and color variants!')
 }
 
