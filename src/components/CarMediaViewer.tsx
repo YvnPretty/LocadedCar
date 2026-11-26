@@ -23,7 +23,7 @@ export default function CarMediaViewer({ vehicleId, imageUrl, brand, model, stat
   const [showOriginal, setShowOriginal] = useState(false);
   const selected = colors.find(color => color.nombre === selectedName);
   const src = resolveVehicleImage(car, selected?.imagenUrl || imageUrl);
-  const canPreview = !!src && !!vehiclePaintMasks[src];
+  const canPreview = !!src && (!!vehiclePaintMasks[src] || src.startsWith('/vehicles/catalog-'));
   const preview = canPreview && !!selected && !showOriginal;
 
   return <section className="vehicle-configurator" aria-label="Imágenes y pintura del vehículo">
@@ -42,7 +42,7 @@ export default function CarMediaViewer({ vehicleId, imageUrl, brand, model, stat
         </button>)}
       </div>
       {canPreview && <fieldset className="paint-finishes"><legend>Acabado de pintura</legend><div>{paintFinishes.map(item => <button key={item.id} type="button" disabled={!selected} aria-pressed={finish === item.id} onClick={() => { setFinish(item.id); setShowOriginal(false); }}>{item.label}</button>)}</div></fieldset>}
-      <p className="paint-note">{canPreview ? 'Simulación visual sobre una foto de referencia. Confirma los colores y acabados disponibles con un asesor.' : 'Consulta la disponibilidad del color con un asesor.'}</p>
+      <p className="paint-note">{canPreview ? 'Simulación visual de referencia; en modelos sin máscara individual, el cambio es aproximado. Confirma disponibilidad con un asesor.' : 'Consulta la disponibilidad del color con un asesor.'}</p>
     </div> : <p className="paint-note">Consulta con un asesor los colores disponibles para esta unidad.</p>}
   </section>;
 }
