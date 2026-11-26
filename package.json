@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run images:prepare && prisma generate && prisma db push && prisma db seed && next build",
+    "build": "npm run images:prepare && prisma generate && prisma db push && prisma db seed && tsx --test src/lib/vehicle-colors.test.ts && npm run test:checkout && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
@@ -12,7 +12,8 @@
     "test": "node --import tsx --test src/lib/*.test.ts src/lib/pos/*.test.ts tests/*.test.mjs",
     "admin:setup": "tsx scripts/setup-admin.ts",
     "images:prepare": "node scripts/prepare-vehicle-images.mjs",
-    "predev": "npm run images:prepare"
+    "predev": "npm run images:prepare",
+    "test:checkout": "DATABASE_URL=file:./checkout-test.db prisma db push --skip-generate && DATABASE_URL=file:./checkout-test.db tsx scripts/check-checkout.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
