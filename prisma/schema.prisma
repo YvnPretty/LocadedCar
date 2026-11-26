@@ -72,6 +72,10 @@ model Transaccion {
   id           String        @id @default(uuid())
   fecha        DateTime      @default(now())
   montoTotal   Float
+  colorNombre  String?
+  colorHex     String?
+  modalidad    String?
+  metodoPago   String?
   
   vehiculoId   String
   vehiculo     Vehiculo      @relation(fields: [vehiculoId], references: [id])
