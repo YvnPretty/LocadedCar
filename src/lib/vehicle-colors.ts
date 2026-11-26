@@ -17,13 +17,19 @@ export type PaintFinish = 'gloss' | 'satin' | 'matte';
 export const paintFinishes: { id: PaintFinish; label: string }[] = [
   { id: 'gloss', label: 'Brillante' }, { id: 'satin', label: 'Satinado' }, { id: 'matte', label: 'Mate' },
 ];
+export const standardColors = [
+  ['Rojo Deportivo', '#d02028'], ['Azul Racing', '#2463a0'],
+  ['Negro Grafito', '#25282b'], ['Blanco Perla', '#eeeae0'],
+  ['Plata Metálico', '#b8bec4'], ['Verde Racing', '#237344'],
+] as const;
+
 export function getVehicleColors(car: VehicleIdentity, colors: VehicleColor[] = []): VehicleColor[] {
   if (colors.length) return colors;
   const palette = vehiclePalettes.find(p => p.marca === car.marca && p.modelo === car.modelo);
   const image = resolveVehicleImage(car);
   // Never recolor a user upload with a mask made for a reference photograph.
   if (!image?.startsWith('/vehicles/')) return [];
-  return palette?.colors.map(([nombre, hex]) => ({ nombre, hex, imagenUrl: image })) ?? [];
+  return (palette?.colors ?? standardColors).map(([nombre, hex]) => ({ nombre, hex, imagenUrl: image }));
 }
 export function paintTransfer(hex: string, finish: PaintFinish) {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return null;
