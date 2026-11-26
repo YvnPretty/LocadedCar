@@ -743,7 +743,7 @@ export default function CheckoutClient({
 
               {/* Imagen */}
               <div className="relative aspect-video rounded-2xl overflow-hidden mb-4 border border-line">
-                {color && previewSrc && vehiclePaintMasks[previewSrc] ? <VehiclePaintPreview src={previewSrc} name={vehicleName(selectedCar)} color={color.hex} colorName={color.nombre} finish={finish}/> : <VehicleImage car={selectedCar} src={previewSrc} className="w-full h-full" showCredit />}
+                {color && previewSrc && (vehiclePaintMasks[previewSrc] || previewSrc.startsWith('/vehicles/catalog-')) ? <VehiclePaintPreview src={previewSrc} name={vehicleName(selectedCar)} color={color.hex} colorName={color.nombre} finish={finish}/> : <VehicleImage car={selectedCar} src={previewSrc} className="w-full h-full" showCredit />}
                 <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent"></div>
                 <div className="absolute bottom-3 left-3">
                   <p className="text-xs text-muted font-mono uppercase">{selectedCar.marca}</p>
