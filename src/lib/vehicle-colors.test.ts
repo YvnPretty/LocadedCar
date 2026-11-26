@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { getVehicleColors, paintTransfer, vehiclePalettes } from './vehicle-colors';
 import { vehiclePaintMasks } from './vehicle-paint';
+import { expandedVehicleMedia } from './expanded-vehicle-media';
 
 test('all eight reference models have usable color previews without seeding the database', () => {
   assert.equal(vehiclePalettes.length, 8);
@@ -23,6 +24,16 @@ test('preserves real variant photos and never assigns reference masks to custom 
   assert.deepEqual(getVehicleColors(car, variants), variants);
   assert.equal(vehiclePaintMasks[variants[0].imagenUrl], undefined);
   assert.deepEqual(getVehicleColors({marca:'Unknown', modelo:'New'}), []);
+});
+test('every expanded catalog model offers six usable color choices', () => {
+  for (const model of expandedVehicleMedia) {
+    const colors = getVehicleColors({ marca: model.brand, modelo: model.model });
+    assert.equal(colors.length, 6);
+    for (const color of colors) {
+      assert.ok(existsSync(`public${color.imagenUrl}`));
+      assert.ok(paintTransfer(color.hex, 'gloss'));
+    }
+  }
 });
 test('paint responds to both hue and finish with bounded channel values', () => {
   assert.notDeepEqual(paintTransfer('#ff0000', 'gloss'), paintTransfer('#0000ff', 'gloss'));
