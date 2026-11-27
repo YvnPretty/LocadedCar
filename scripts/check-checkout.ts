@@ -34,7 +34,7 @@ async function main() {
     const duplicate = await POST(request());
     assert.equal(duplicate.status, 409);
     assert.equal(await prisma.transaccion.count({ where: { vehiculoId: id } }), 1);
-    const escape = (value: unknown) => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch] || ch));
+    const escape = (value: unknown) => String(value).replace(/[&<>"']/g, ch => (({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'} as Record<string,string>)[ch] || ch));
     const price = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(receipt.montoTotal);
     const steps = [
       ['01 · Selección', 'Toyota GR Supra 2020 · Azul Racing'],
