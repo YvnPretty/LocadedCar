@@ -540,7 +540,7 @@ export default function POSClient({
                 const catalogColors = getVehicleColors(carIdentity, car.colores);
                 const displayColor = isSelected ? selectedColor : (car.colores[0] ?? catalogColors[0] ?? null);
                 const resolvedSrc = resolveVehicleImage(carIdentity, displayColor?.imagenUrl || car.imagenUrl);
-                const canPreviewPaint = !!resolvedSrc && (!!vehiclePaintMasks[resolvedSrc] || resolvedSrc.startsWith('/vehicles/catalog-')) && !!displayColor;
+                const canPreviewPaint = !!resolvedSrc && !!vehiclePaintMasks[resolvedSrc] && !!displayColor;
 
                 return (
                   <motion.div
@@ -680,7 +680,7 @@ export default function POSClient({
             const catalogColors = getVehicleColors(carIdentity, selectedCar.colores);
             const activeColor = selectedColor || selectedCar.colores[0] || catalogColors[0] || null;
             const resolvedSrc = resolveVehicleImage(carIdentity, activeColor?.imagenUrl || selectedCar.imagenUrl);
-            const canPreviewPaint = !!resolvedSrc && (!!vehiclePaintMasks[resolvedSrc] || resolvedSrc.startsWith('/vehicles/catalog-')) && !!activeColor;
+            const canPreviewPaint = !!resolvedSrc && !!vehiclePaintMasks[resolvedSrc] && !!activeColor;
 
             return (
               <div className="liquid-glass-card p-4 rounded-2xl relative overflow-hidden shadow-xl space-y-3">
