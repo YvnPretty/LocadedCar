@@ -10,24 +10,7 @@ export default function VehiclePaintPreview({ src, name, color, colorName, finis
   const id = useId().replace(/:/g, '');
   const mask = vehiclePaintMasks[src];
   const channels = paintTransfer(color, finish);
-  if (!channels) return null;
-  if (!mask) return <div className="relative h-full w-full bg-white">
-    <svg viewBox="0 0 1000 600" className="h-full w-full" role="img" aria-label={`${name}, ${colorName}, simulación aproximada`}>
-      <defs>
-        <radialGradient id={`${id}-soft`} cx="50%" cy="56%" r="49%">
-          <stop offset="0%" stopColor="white"/><stop offset="65%" stopColor="white" stopOpacity=".85"/><stop offset="100%" stopColor="black"/>
-        </radialGradient>
-        <mask id={`${id}-approx`} maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="600"><ellipse cx="500" cy="340" rx="480" ry="225" fill={`url(#${id}-soft)`}/></mask>
-        <filter id={`${id}-color`} colorInterpolationFilters="sRGB">
-          <feColorMatrix type="saturate" values="0"/>
-          <feComponentTransfer><feFuncR type="table" tableValues={channels[0]}/><feFuncG type="table" tableValues={channels[1]}/><feFuncB type="table" tableValues={channels[2]}/></feComponentTransfer>
-        </filter>
-      </defs>
-      <image href={src} width="1000" height="600" preserveAspectRatio="xMidYMid meet"/>
-      <image href={src} width="1000" height="600" preserveAspectRatio="xMidYMid meet" filter={`url(#${id}-color)`} mask={`url(#${id}-approx)`} opacity=".8"/>
-    </svg>
-    <span className="absolute bottom-3 left-3 rounded-md bg-white/90 px-2 py-1 text-[10px] text-ink">Vista aproximada · {colorName}</span>
-  </div>;
+  if (!mask || !channels) return null;
   return <div className="relative h-full w-full bg-white">
     <svg viewBox={`0 0 ${mask.width} ${mask.height}`} className="h-full w-full" role="img" aria-label={`${name}, ${colorName}, vista previa de pintura`}>
       <defs>
