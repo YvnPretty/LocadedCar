@@ -31,6 +31,7 @@ test('every expanded catalog model offers six usable color choices', () => {
     assert.equal(colors.length, 6);
     for (const color of colors) {
       assert.ok(existsSync(`public${color.imagenUrl}`));
+      assert.ok(vehiclePaintMasks[color.imagenUrl]?.body, `Missing paint mask: ${color.imagenUrl}`);
       assert.ok(paintTransfer(color.hex, 'gloss'));
     }
   }
