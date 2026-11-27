@@ -33,9 +33,9 @@ export function getVehicleColors(car: VehicleIdentity, colors: VehicleColor[] = 
 }
 export function paintTransfer(hex: string, finish: PaintFinish) {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return null;
-  const sheen = finish === 'gloss' ? 1 : finish === 'satin' ? 0.82 : 0.68;
+  const sheen = finish === 'gloss' ? 0.38 : finish === 'satin' ? 0.24 : 0.12;
   return [1, 3, 5].map(offset => {
     const channel = parseInt(hex.slice(offset, offset + 2), 16) / 255;
-    return [0, channel * 0.45, channel * 0.85, channel, channel + (1 - channel) * sheen].join(' ');
+    return [0, channel * 0.55, channel * 0.88, channel, channel + (1 - channel) * sheen].join(' ');
   });
 }
