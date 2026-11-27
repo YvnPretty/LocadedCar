@@ -1,7 +1,9 @@
+import { expandedPaintMasks } from './expanded-paint-masks';
 /** Masks are tied to the exact reference photo, never to arbitrary vehicle uploads.
  * Coordinates trace painted panels; cutouts preserve glass, lights, trim and wheels.
  */
 export const vehiclePaintMasks: Record<string, { width: number; height: number; body: string; cutouts: string; chroma?: 'yellow' | 'red' }> = {
+  ...expandedPaintMasks,
   '/vehicles/porsche-911-gt3-rs-992.jpg': {
     width: 1280, height: 748,
     body: 'M100 453 Q115 364 193 285 L452 237 Q530 139 613 110 Q742 70 910 106 Q1024 110 1109 181 Q1158 190 1175 239 L1150 243 Q1100 264 1103 415 L877 526 L856 421 Q820 306 757 382 Q718 418 691 628 Q439 695 108 590 Z',
